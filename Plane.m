@@ -25,7 +25,7 @@ classdef Plane
                 x = aircraft(i).position(1);
                 y = aircraft(i).position(2); 
                 obj.ac_figure_handles(i) =  patch(x,y,'k');
-%                 obj.boids_figure_handles(i) = rectangle('Position', pos, 'Curvature', [1 1],...
+%                 obj.ac_figure_handles(i) = rectangle('Position', pos, 'Curvature', [1 1],...
 %                     'FaceColor',[0 0 0]);
             end
         end
