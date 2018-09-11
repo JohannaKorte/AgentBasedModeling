@@ -10,14 +10,14 @@ classdef Move
     
     methods
         
-        function obj = Move(boids,lattice_size)
-            obj.ac=boids;
+        function obj = Move(aircraft,lattice_size)
+            obj.ac=aircraft;
             obj.lattice_size=lattice_size;
         end
         
         function run(obj, plane)
             while true
-                obj = flock(obj);
+                obj = move(obj);
                 obj = update_boids(obj);
                 obj = borders(obj);
                 [obj,plane] = render(obj,plane);
@@ -30,9 +30,9 @@ classdef Move
             end
         end
         
-        function obj = flock(obj)
+        function obj = move(obj)
             for i=1:length(obj.ac)
-                obj.ac(i)=obj.ac(i).flock(obj.ac);
+                obj.ac(i)=obj.ac(i).move(obj.ac);
             end
         end
         
