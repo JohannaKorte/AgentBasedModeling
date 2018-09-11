@@ -18,13 +18,13 @@ classdef Move
         function run(obj, plane)
             while true
                 obj = move(obj);
-                obj = update_boids(obj);
+                obj = update_ac(obj);
                 obj = borders(obj);
                 [obj,plane] = render(obj,plane);
             end
         end
         
-        function obj = update_boids(obj)
+        function obj = update_ac(obj)
             for i=1:length(obj.ac)
                 obj.ac(i)=obj.ac(i).update();
             end
