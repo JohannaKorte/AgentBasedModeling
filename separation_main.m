@@ -1,15 +1,15 @@
 % Main file for Assignment 1
-xdim = 200;
+xdim = 200; %set dimensions for field 
 ydim = 200; 
-aircraft_count = 10;
-max_velocity = 5; 
+aircraft_count = 10;    %number of aircraft in the field 
+max_velocity = 5;       %maximum velocity of the aircraft 
 
-aircraft = AC.empty(); 
+aircraft = AC.empty();  %initialize new AC class variable
 for i=1:aircraft_count
-    aircraft(i)=AC(rand*xdim,rand*ydim,max_velocity);
+    aircraft(i)=AC(rand*xdim,rand*ydim,max_velocity); %initialize  
 end
-
-a = Move(aircraft,[xdim ydim]);
-f = figure;
-plane = Plane(f,[xdim ydim], aircraft);
+ 
+a = Move(aircraft,[xdim ydim]); %Calculate movements of aircraft 
+f = figure;   %initialize new figure
+plane = Plane(f,[xdim ydim], aircraft); %Render image of aircraft
 a.run(plane); %runs and draws the simulation
