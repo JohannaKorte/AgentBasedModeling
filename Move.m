@@ -3,7 +3,7 @@
 
 classdef Move
     properties
-        aircraft        % array of aircraft in sim
+        ac              % array of aircraft in sim
         lattice_size    % raster_grootte
         step_counter=1;
     end
@@ -22,7 +22,7 @@ classdef Move
         function run(obj, plane)
             while true                          % Loop until one of them is false?
                 obj = move(obj);
-                obj = update_aircraft(obj);
+                obj = update_ac(obj);
                 obj = borders(obj);
                 [obj,plane] = render(obj,plane);
             end
