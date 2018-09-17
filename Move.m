@@ -21,7 +21,7 @@ classdef Move
         % Function uses the 4 functions below
         function run(obj, plane)
             while true              % There is no stop, it keeps running 
-                obj = move(obj);
+                obj = move(obj, 'proactive');
                 obj = update_ac(obj);
                 obj = borders(obj);
                 [obj,plane] = render(obj,plane);
@@ -31,9 +31,13 @@ classdef Move
         
         % Moves the whole obj (per aircraft)
         % (function 'move()' can be found in AC.m)
-        function obj = move(obj)
-            for i=1:length(obj.ac)
-                obj.ac(i)=obj.ac(i).move(obj.ac);
+        function obj = move(obj, mode)
+            if strcmp(mode, 'reactive')
+                for i=1:length(obj.ac)
+                    obj.ac(i)=obj.ac(i).move(obj.ac);
+                end
+            else 
+                obj.ac = obj.ac.proactive_move(); 
             end
         end
         

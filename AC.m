@@ -46,6 +46,12 @@ classdef AC
             obj.velocity = obj.reactive(aircraft); %this changes obj's properties
         end
         
+        function obj = proactive_move(obj, ac)
+           % Input is array of AC type
+           obj.proactive(obj); 
+           %obj.velocity = ;
+        end
+        
         function obj = update(obj)
             % Make the agent move one step into its desired direction by
             % updating its position using the velocity attribute
@@ -122,6 +128,26 @@ classdef AC
                      velocity = velocity/norm(velocity); %normalize velocity
                  end                
             end    
-        end            
+        end   
+        
+        function obj = proactive(obj, ac)
+            % obj = entire array with 60ac
+            conflicts = [0, 0];
+            for i=1:size(obj,2)
+                % for ac 1,...,n get conflicts 
+                for j = 1:ceil(size(obj,2)/2)
+                   if j~=i && distance(obj(i), obj(j)) < 20 && ...
+                           distance(obj(i), obj(j)) <= 50
+                        conflicts(end+1,1:2) = [i,j];
+                   end  
+                end
+            end
+            disp(conflicts);
+        end
+        
+        function [distance] = distance(a,b)
+            distance = pdist([a.position(1), a.position(2);
+                b.position(1), b.position(2)]);
+        end     
      end  
 end 
