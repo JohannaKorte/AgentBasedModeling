@@ -21,7 +21,7 @@ classdef Move
         % Function uses the 4 functions below
         function run(obj, plane)
             while true              % There is no stop, it keeps running 
-                obj = move(obj, 'proactive');
+                obj = move(obj);
                 obj = update_ac(obj);
                 obj = borders(obj);
                 [obj,plane] = render(obj,plane);
@@ -31,13 +31,9 @@ classdef Move
         
         % Moves the whole obj (per aircraft)
         % (function 'move()' can be found in AC.m)
-        function obj = move(obj, mode)
-            if strcmp(mode, 'reactive')
-                for i=1:length(obj.ac)
-                    obj.ac(i)=obj.ac(i).move(obj.ac);
-                end
-            else 
-                obj.ac = obj.ac.proactive_move(); 
+        function obj = move(obj)
+            for i=1:length(obj.ac)
+                obj.ac(i)=obj.ac(i).move(obj.ac);
             end
         end
         
@@ -57,33 +53,53 @@ classdef Move
             end
         end
         
-        % Renders the whole obj per aircraft 
-        % (function 'render()' can be found in AC.m)
-        function [obj,plane] = render(obj,plane)
+        
+        function [obj, plane] = render(obj,plane)
             obj.step_counter=obj.step_counter+1;
             fprintf('Rendering %s \n',num2str(obj.step_counter))
-            
-            % Theta = angle between plane and aircraft
-                    % atan2: check which quadrant
-                    % use norm = magnitude (sum of cross and dot product
-                    % squared and squared root)
-                    % cross and dot product from [velo 0] (=[vx vy 0]) 
-                    % and [1 0 0] (take x-axis as reference for theta)
             for i=1:length(obj.ac)
-                delete(plane.ac_figure_handles(i)); % delete previous figures (so you can show updated ones) 
-                theta = atan2(norm(cross([obj.ac(i).velocity 0],[1 0 0])),dot([obj.ac(i).velocity 0],[1 0 0]));
-              %  x and y give outlines of triangle (= aircraft)
-                x = [obj.ac(i).position(1)-2.5 obj.ac(i).position(1)+2.5 obj.ac(i).position(1)-2.5 obj.ac(i).position(1)-2.5];
-                y = [obj.ac(i).position(2)-1.5 obj.ac(i).position(2) obj.ac(i).position(2)+1.5 obj.ac(i).position(2)+1.5];
-              % function 'patch()' creates a polygone (so it connects the coordinates).
-                    % patch(x, y, color)
-                plane.ac_figure_handles(i) =  patch(x,y,'k');
-              % rotate the triangle (=aircraft)
-                    % rotate(surface, direction ([x y z]), degrees, origin ([x y z]))
-                rotate(plane.ac_figure_handles(i), [0 0 1], rad2deg(theta), [obj.ac(i).position(1) obj.ac(i).position(2) 0]);
+                delete(plane.ac_figure_handles(i)); % delete previous figures (so you can show updated ones)
+                % viscircles([centerX, centerY], radius);
+                h = viscircles([obj.ac(i).position(1) obj.ac(i).position(2)], 1.7, 'Color', 'k');
+                plane.ac_figure_handles(i) = h;
+                
+                    
             end
             drawnow;
         end
+                
+
+
+
+
+
+% %         % Renders the whole obj per aircraft 
+% %         % (function 'render()' can be found in AC.m)
+% %         function [obj,plane] = render(obj,plane)
+% %             obj.step_counter=obj.step_counter+1;
+% %             fprintf('Rendering %s \n',num2str(obj.step_counter))
+% %             
+% %             % Theta = angle between plane and aircraft
+% %                     % atan2: check which quadrant
+% %                     % use norm = magnitude (sum of cross and dot product
+% %                     % squared and squared root)
+% %                     % cross and dot product from [velo 0] (=[vx vy 0]) 
+% %                     % and [1 0 0] (take x-axis as reference for theta)
+% %             for i=1:length(obj.ac)
+% %                 delete(plane.ac_figure_handles(i)); % delete previous figures (so you can show updated ones) 
+% %                 theta = atan2(norm(cross([obj.ac(i).velocity 0],[1 0 0])),dot([obj.ac(i).velocity 0],[1 0 0]));
+% %               %  x and y give outlines of triangle (= aircraft)
+% %                 x = [obj.ac(i).position(1)-2.5 obj.ac(i).position(1)+2.5 obj.ac(i).position(1)-2.5 obj.ac(i).position(1)-2.5];
+% %                 y = [obj.ac(i).position(2)-1.5 obj.ac(i).position(2) obj.ac(i).position(2)+1.5 obj.ac(i).position(2)+1.5];
+% %               % function 'patch()' creates a polygone (so it connects the coordinates).
+% %                     % patch(x, y, color ('k' = black))
+% %                 plane.ac_figure_handles(i) =  patch(x,y,'k');
+% %               % rotate the triangle (=aircraft)
+% %                     % rotate(surface, direction ([x y z]), degrees, origin ([x y z]))
+% %                 rotate(plane.ac_figure_handles(i), [0 0 1], rad2deg(theta), [obj.ac(i).position(1) obj.ac(i).position(2) 0]);
+% %             end
+% %             drawnow;
+% %         end
         
 
         
