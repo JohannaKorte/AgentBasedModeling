@@ -17,13 +17,14 @@ classdef Plane
             plot(0,0);
             xlim([0 lattice_size(1)]);
             ylim([0 lattice_size(2)]);
+            
             for i=1:length(aircraft)
                %%the same as in Move (see function 'render()')
-                %x = [aircraft(i).position(1)-2.5 aircraft(i).position(1)+2.5 aircraft(i).position(1)-2.5 aircraft(i).position(1)-2.5];
-                %y = [aircraft(i).position(2)-1.5 aircraft(i).position(2) aircraft(i).position(2)+1.5 aircraft(i).position(2)+1.5];
-                %pos = [aircraft(i).position(1)-1 aircraft(i).position(2)-1 5 5];
-                x = aircraft(i).position(1);
-                y = aircraft(i).position(2); 
+                x = [aircraft(i).position(1)-2.5 aircraft(i).position(1)+2.5 aircraft(i).position(1)-2.5 aircraft(i).position(1)-2.5];
+                y = [aircraft(i).position(2)-1.5 aircraft(i).position(2) aircraft(i).position(2)+1.5 aircraft(i).position(2)+1.5];
+                %x = aircraft(i).position(1);
+                %y = aircraft(i).position(2);
+                pos = [aircraft(i).position(1)-1 aircraft(i).position(2)-1 5 5]; 
                 obj.ac_figure_handles(i) = patch(x,y,'k');
             end
         end
