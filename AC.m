@@ -137,15 +137,32 @@ classdef AC
                 % for ac 1,...,n get conflicts 
                 for j = 1:ceil(size(obj,2)/2)
                    if j~=i && distance(obj(i), obj(j)) < 20 && ...
-                           distance(obj(i), obj(j)) <= 50
+                           distance(obj(i), obj(j)) <= obj(i).sight
                         conflicts(end+1,1:2) = [i,j];
                    end  
                 end
             end
             disp(conflicts);
+            
+            for c=1:size(conflict,2)
+                %iterate over conflicts
+                agent1 = conflict(1);
+                agent2 = conflict(2);
+                % if almost same heading, the one behind slows down
+                if abs(agent1.angle - agent2.angle) > -2/8*pi ... 
+                        && abs(agent1.angle - agent2.angle) < 2/8*pi
+                    %slow down one behind
+                    if agent1.position(1) < agent2.postion(1)
+                       %TODO: slow down 1 
+                    else 
+                        %TODO: slow down 2
+                    end
+                end    
+            end
         end
         
         function [distance] = distance(a,b)
+            % Gives the distance between two agents
             distance = pdist([a.position(1), a.position(2);
                 b.position(1), b.position(2)]);
         end     
