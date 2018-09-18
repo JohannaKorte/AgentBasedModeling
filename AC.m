@@ -29,11 +29,16 @@ classdef AC
     end
     
     methods 
-        function obj = AC(xpos, ypos, maxv, sight) 
+        function obj = AC(xpos, ypos, maxv, sight, angle) 
             % Initializes a new aircraft agent with an initial angle
             % position, speed and the maximum speed.
-            %obj.angle = (2*pi).*rand;
-            obj.angle = 0.5*pi;
+%             obj.angle = (2*pi).*rand;
+%               if angle >= 0.5
+%                   obj.angle = pi;
+%               else
+%                   obj.angle = 2*pi;
+%               end
+            obj.angle = pi; 
             obj.position = [xpos ypos];
             obj.velocity = [cos(obj.angle) sin(obj.angle)];
             obj.max_velocity = maxv;
@@ -138,9 +143,8 @@ classdef AC
             % Get all conflicts within 20 distance
             for i=1:size(obj,2) 
                 for j = 1:size(obj,2)
-                   if j~=i && distance(obj(i), obj(j)) < 20 && ...
+                   if j~=i && distance(obj(i), obj(j)) < 20+10 && ...
                            distance(obj(i), obj(j)) <= obj(i).sight
-                       
                        if ismember([j,i], conflicts, 'rows') == 0
                             conflicts(end+1,1:2) = [i,j];
                        end 
@@ -161,23 +165,54 @@ classdef AC
                         % Check if in front or back
                         if front(agent1, agent2)
                             %slow down one behind, speed up one in front
-                            obj(conflicts(c,2)) = obj(conflicts(c,2)).speeddown(); 
-                            obj(conflicts(c,1)) = obj(conflicts(c,1)).speedup();
+                            obj(conflicts(c,2)) = obj(conflicts(c,2)).speeddown(0.9); 
+                            obj(conflicts(c,1)) = obj(conflicts(c,1)).speedup(1.1);
                         elseif front(agent2, agent1)
-                            obj(conflicts(c,1)) = obj(conflicts(c,1)).speeddown();
-                            obj(conflicts(c,2)) = obj(conflicts(c,2)).speedup();
-                        else %resume speed for 
+                            obj(conflicts(c,1)) = obj(conflicts(c,1)).speeddown(0.9);
+                            obj(conflicts(c,2)) = obj(conflicts(c,2)).speedup(1.1);
+                        else %resume speed and 1 turns 3 degrees
                             obj(conflicts(c,1)).velocity = ...
                                 resume_speed(obj(conflicts(c,1))); 
                             obj(conflicts(c,2)).velocity = ...
                                 resume_speed(obj(conflicts(c,2))); 
                         end
-                    elseif oppositeheading(agent1, agent2)    
-                        % TODO: Check if on collision course
-                            % TODO: both move right 
-                        % TODO: Expand
-                    elseif sideheading(agent1, agent2)
-                        %TODO: Expand
+                        
+                    elseif oppositeheading(agent1, agent2)
+%                         obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(90);
+                        %obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(2);
+
+%                     else %sides
+%                         if agent1.velocity(1) < 0 && agent2.velocity(1) < 0
+%                             % both move left 
+%                             if agent1.position(1) > agent2.position(1)
+%                                 obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(45);
+%                             else 
+%                                 obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(45);
+%                             end 
+%                         elseif agent1.position(1) > 0 && agent2.position(1) > 0 
+%                             % both move right
+%                             if agent1.position(1) > agent2.position(1)
+%                                 obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(45);
+%                             else 
+%                                 obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(45);
+%                             end 
+%                         elseif agent1.position(2) < 0 && agent2.position(2) < 0
+%                             % both move down
+%                             if agent1.position(2) > agent2.position(2)
+%                                 obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(45);
+%                             else 
+%                                 obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(45);
+%                             end 
+%                         else 
+%                             % both move up 
+%                             if agent1.position(2) > agent2.position(2)
+%                                 obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(45);
+%                             else 
+%                                 obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(45);
+%                             end 
+%                         end 
+%find common direction
+%move the one least closest to the border of that direction
                     end
                 end
             end
@@ -193,7 +228,7 @@ classdef AC
             end  
         end
         
-        function v = resume_speed(a)
+        function [v] = resume_speed(a)
             vel = a.velocity;
             v = vel * (a.max_velocity/norm(vel));
         end 
@@ -204,14 +239,60 @@ classdef AC
                 b.position(1), b.position(2)]);
         end   
         
-        function obj = speeddown(obj)
+%         function bool = collision(a, b)
+%             bool = 0; 
+%             if a.angle <= 0.5*pi
+%                 %moving to upper right
+%                 if b.position(1) >= a.position(1) && b.position(2) >= ...
+%                     a.position(2)
+%                     bool = 1; 
+%                 end 
+%             elseif a.angle <= pi 
+%                 %moving to upper left
+%                 if b.position(1) < a.position(1) && b.position(2) >= ...
+%                     a.position(2)
+%                     bool = 1; 
+%                 end 
+%             elseif a.angle <= 1.5*pi 
+%                 %moving to down left 
+%                 if b.position(1) < a.position(1) && b.position(2) < ...
+%                     a.position(2)
+%                     bool = 1; 
+%                 end         
+%             elseif a.angle <= 2*pi 
+%                 %moving down and right 
+%                 if b.position(1) >= a.position(1) && b.position(2) < ...
+%                     a.position(2)
+%                     bool = 1; 
+%                 end
+%             end 
+%         end
+        
+        function obj = speeddown(obj, factor)
+            min_velocity = 0.1;
             % Decreases the speed of the agent with 10%
-            obj.velocity = obj.velocity * 0.9;
+            obj.velocity = obj.velocity * factor;
+            if norm(obj.velocity) < min_velocity
+                obj.velocity = min_velocity/norm(obj.velocity)*obj.velocity; 
+            end 
         end
         
-        function obj = speedup(obj)
+        function obj = speedup(obj, factor)
             % Increases the speed of the agent with 5%
-            obj.velocity = obj.velocity * 1.05;
+            obj.velocity = obj.velocity * factor;
+            if obj.velocity > norm(obj.max_velocity)
+               obj.velocity = obj.max_velocity/norm(obj.velocity)*obj.velocity; 
+            end
+        end
+        
+        function obj = turn(obj, degrees)
+            % Rotation according to these rules: 
+            % x2=cos?x1?sin?y1 
+            % y2=sin?x1+cos?y1
+            new_x = cosd(degrees)*obj.velocity(1) - sind(degrees)*obj.velocity(2);
+            new_y = sind(degrees)*obj.velocity(1) + cosd(degrees)*obj.velocity(2);
+            obj.velocity(1) = new_x;
+            obj.velocity(2) = new_y;
         end
         
         function bool = sameheading(a, b)
@@ -231,9 +312,10 @@ classdef AC
             angle1 = atan2(a.velocity(2), a.velocity(1));
             angle2 = atan2(b.velocity(2), b.velocity(1));
             difference = abs(angle1 - angle2); 
+            disp(difference); 
             bool = 0; 
             if difference > 3/4*pi && ...
-                    difference <= pi
+                    difference <= pi+0.1
                 bool = 1; 
             end
         end 
@@ -252,16 +334,13 @@ classdef AC
         function bool = front(a, b)
             % Agent a is in front of agent b 
             bool = 0;
-            f1 = [a.velocity(1), a.velocity(2)];
-            f2 = [-a.velocity(1), a.velocity(2)];
-            
-            %        hellingsgetal
-            %y_b >= f1(2)/f1(1) * x     % x is xposition van agent b tov a
-            difference = b.position(2) - a.position(2);
-            if b.position(2) >= (f1(2)/f1(1))*difference ...
-                    || b.position(2) >= (f2(2)/f2(1))*difference
+            difference_y = b.position(2) - a.position(2);
+            difference_x = b.position(1) - a.position(1);
+            if  difference_y <= (a.velocity(1)/(-a.velocity(2)))*difference_x
                 bool = 1; 
-            end               
+                
+            end 
+
         end 
         
      end  
