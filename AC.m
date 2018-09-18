@@ -32,8 +32,8 @@ classdef AC
         function obj = AC(xpos, ypos, maxv, sight) 
             % Initializes a new aircraft agent with an initial angle
             % position, speed and the maximum speed.
-            obj.angle = (2*pi).*rand;
-            %obj.angle = 0.5*pi;
+            %obj.angle = (2*pi).*rand;
+            obj.angle = 0.5*pi;
             obj.position = [xpos ypos];
             obj.velocity = [cos(obj.angle) sin(obj.angle)];
             obj.max_velocity = maxv;
@@ -252,9 +252,16 @@ classdef AC
         function bool = front(a, b)
             % Agent a is in front of agent b 
             bool = 0;
-            if a.position(2) + b.position(2) > a.position(1) + b.position(1)
-               bool = 1;  
-            end
+            f1 = [a.velocity(1), a.velocity(2)];
+            f2 = [-a.velocity(1), a.velocity(2)];
+            
+            %        hellingsgetal
+            %y_b >= f1(2)/f1(1) * x     % x is xposition van agent b tov a
+            difference = b.position(2) - a.position(2);
+            if b.position(2) >= (f1(2)/f1(1))*difference ...
+                    || b.position(2) >= (f2(2)/f2(1))*difference
+                bool = 1; 
+            end               
         end 
         
      end  
