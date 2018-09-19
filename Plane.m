@@ -28,4 +28,3 @@ classdef Plane
     end
     
 end
-

@@ -20,23 +20,34 @@ classdef Move
         % then updating the position of the object, then rendering all.
         % Function uses the 4 functions below
         function run(obj, plane)
-            ticks = 0;
-            %while true              % There is no stop, it keeps running 
-            while ticks <= 98 % = 100-2
-                obj = move(obj);
+            ticks = 1;
+            runs = 100;
+            %initialize distances & conflicts 
+            conflicts = zeros(1,runs);
+            conflicts(1,ticks) = obj.ac.count_conflicts();
+            %while true              
+            while ticks <= runs
+                obj = move(obj, 'proactive');
                 obj = update_ac(obj);
                 obj = borders(obj);
                 [obj,plane] = render(obj,plane);
+                conflicts(1,ticks) = obj.ac.count_conflicts();
                 ticks = ticks +1;
             end
+            plot(linspace(1,ticks-1,ticks-1),conflicts);
+
         end
         
         
         % Moves the whole obj (per aircraft)
         % (function 'move()' can be found in AC.m)
-        function obj = move(obj)
-            for i=1:length(obj.ac)
-                obj.ac(i)=obj.ac(i).move(obj.ac);
+        function obj = move(obj, mode)
+            if strcmp(mode, 'reactive')
+                for i=1:length(obj.ac)
+                    obj.ac(i)=obj.ac(i).move(obj.ac);
+                end
+            else 
+                obj.ac = obj.ac.proactive_move(); 
             end
         end
         
@@ -56,24 +67,19 @@ classdef Move
             end
         end
         
-        
         function [obj, plane] = render(obj,plane)
-            obj.step_counter=obj.step_counter+1;
             fprintf('Rendering %s \n',num2str(obj.step_counter))
-            for i=1:length(obj.ac)
+            for i=1:length(obj.ac)                
                 delete(plane.ac_figure_handles(i)); % delete previous figures (so you can show updated ones)
                 % viscircles([centerX, centerY], radius);
                 h = viscircles([obj.ac(i).position(1) obj.ac(i).position(2)], 1.7, 'Color', 'k');
-                plane.ac_figure_handles(i) = h;
-                
-                    
+                plane.ac_figure_handles(i) = h;          
             end
             drawnow;
+            obj.step_counter=obj.step_counter+1;
         end
                 
-
-
-
+        
 
 
 % %         % Renders the whole obj per aircraft 

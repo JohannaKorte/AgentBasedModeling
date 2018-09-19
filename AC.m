@@ -32,13 +32,7 @@ classdef AC
         function obj = AC(xpos, ypos, maxv, sight, angle) 
             % Initializes a new aircraft agent with an initial angle
             % position, speed and the maximum speed.
-             %obj.angle = (2*pi).*rand;
-               if angle >= 0.5
-                   obj.angle = pi;
-               else
-                   obj.angle = 2*pi;
-               end
-%            obj.angle = pi; 
+            obj.angle = (2*pi).*rand;
             obj.position = [xpos ypos];
             obj.velocity = [cos(obj.angle) sin(obj.angle)];
             obj.max_velocity = maxv;
@@ -67,20 +61,20 @@ classdef AC
         function obj = borders(obj, lattice_size)
             % Makes sure that the aircraft cannot fall of the grid, by 
             % connecting opposite sides to eachother.
-            if obj.position(1) < -obj.r %x coordinate < obj.r?
-                obj.position(1)=lattice_size(1)+obj.r; %move to other x end
+            if obj.position(1) < -obj.r 
+                obj.position(1)=lattice_size(1)+obj.r; 
             end
             
-            if obj.position(2) < -obj.r %y coordinate < obj.r?
-                obj.position(2)=lattice_size(2)+obj.r; %move to other y end
+            if obj.position(2) < -obj.r 
+                obj.position(2)=lattice_size(2)+obj.r; 
             end
             
-            if obj.position(1) > lattice_size(1) + obj.r %x > latticesize
-                obj.position(1)=-obj.r;     % move to beginning x of board
+            if obj.position(1) > lattice_size(1) + obj.r 
+                obj.position(1)=-obj.r;     
             end
             
-            if obj.position(2) > lattice_size(2) + obj.r %y > latticesize
-                obj.position(2)=-obj.r;     % move to beginning y of board
+            if obj.position(2) > lattice_size(2) + obj.r
+                obj.position(2)=-obj.r;    
             end
         end 
         
@@ -158,12 +152,9 @@ classdef AC
                     %iterate over conflicts
                     agent1 = obj(conflicts(c,1));
                     agent2 = obj(conflicts(c,2));
-                    
-                     
                     if distance(agent1, agent2) <= 10
-                        obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(90);
-                        obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(90);
-                    %end  
+                        obj(conflicts(c,1)) = obj(conflicts(c,1)).densityturn(obj);
+                        obj(conflicts(c,2)) = obj(conflicts(c,2)).densityturn(obj);
 
                     elseif sameheading(agent1, agent2)
                         % Check if in front or back
@@ -188,6 +179,7 @@ classdef AC
                     else %sides
                         %find common direction
                         %move the one least closest to the border of that direction
+                        
                         if agent1.velocity(1) < 0 && agent2.velocity(1) < 0
                             % both move left 
                             if agent1.position(1) > agent2.position(1)
@@ -243,7 +235,23 @@ classdef AC
                 b.position(1), b.position(2)]);
         end   
         
-
+        function ac = densityturn(ac, obj)
+            %obj = all aircraft
+            %ac is object of aircraft to turn
+            min_distance = 10000;
+            for i = 1:length(obj)
+                if distance(ac,obj(i)) <= ac.sight && distance(ac,obj(i)) > 0 ...
+                    && distance(ac,obj(i)) < min_distance
+                    min_distance = distance(ac,obj(i));
+                    min_distance_ac = obj(i);
+                end              
+            end
+            new_direction = [-(min_distance_ac.position(1) - ac.position(1)) ...
+                        ,- (min_distance_ac.position(2) - ac.position(2))];
+            new_vector = norm(ac.velocity)/(norm(new_direction)) * new_direction;
+            ac.velocity = new_vector; 
+        end
+        
         function obj = speeddown(obj, factor)
             min_velocity = 0.1;
             % Decreases the speed of the agent with 10%
@@ -288,7 +296,6 @@ classdef AC
             angle1 = atan2(a.velocity(2), a.velocity(1));
             angle2 = atan2(b.velocity(2), b.velocity(1));
             difference = abs(angle1 - angle2); 
-            disp(difference); 
             bool = 0; 
             if difference > 3/4*pi && ...
                     difference <= pi+0.1
@@ -318,6 +325,24 @@ classdef AC
             end 
 
         end 
+        
+        function [distances] = calculate_distances(ac)
+            distances = zeros(1, length(ac));
+%             for i=1:length(ac)
+%                 distances(1,i) = distance
+%             end 
+        end
+        
+        function conflicts = count_conflicts(ac)
+            conflicts = 0;
+            for i=1:length(ac)
+               for j=1:length(ac)
+                    if i~=j && distance(ac(i),ac(j)) <= 20
+                        conflicts = conflicts + 1;
+                    end
+               end
+            end
+        end
         
      end  
 end 
