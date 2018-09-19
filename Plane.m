@@ -29,10 +29,3 @@ classdef Plane
     
 end
 
-% %                %%the same as in Move (see function 'render()')
-% %                 x = [aircraft(i).position(1)-2.5 aircraft(i).position(1)+2.5 aircraft(i).position(1)-2.5 aircraft(i).position(1)-2.5];
-% %                 y = [aircraft(i).position(2)-1.5 aircraft(i).position(2) aircraft(i).position(2)+1.5 aircraft(i).position(2)+1.5];
-% %                 %x = aircraft(i).position(1);
-% %                 %y = aircraft(i).position(2);
-% %                 pos = [aircraft(i).position(1)-1 aircraft(i).position(2)-1 5 5]; 
-% %                 obj.ac_figure_handles(i) = patch(x,y,'k');

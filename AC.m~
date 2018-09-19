@@ -159,13 +159,13 @@ classdef AC
                     agent1 = obj(conflicts(c,1));
                     agent2 = obj(conflicts(c,2));
                     
-                     
-                    if distance(agent1, agent2) <= 10
+                    % if almost same heading, the one behind slows down and
+                    % the one in front speeds up 
+                    if distance(agent1, agent2) <= 7
                         obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(90);
                         obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(90);
-                    %end  
-
-                    elseif sameheading(agent1, agent2)
+                    end     
+                    if sameheading(agent1, agent2)
                         % Check if in front or back
                         if front(agent1, agent2)
                             %slow down one behind, speed up one in front
@@ -186,8 +186,6 @@ classdef AC
                         obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(90);
 
                     else %sides
-                        %find common direction
-                        %move the one least closest to the border of that direction
                         if agent1.velocity(1) < 0 && agent2.velocity(1) < 0
                             % both move left 
                             if agent1.position(1) > agent2.position(1)
@@ -217,6 +215,7 @@ classdef AC
                                 obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(45);
                             end 
                         end 
+
                     end
                 end
             end
