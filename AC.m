@@ -4,20 +4,33 @@ classdef AC
     % that can be applied to these agents
     %
     % AC properties:
-    %   angle        - The agents angle in radials
-    %   position     - The agents [x, y] position
-    %   velocity     - The agent's speed as [x speed, yspeed]
-    %   max_velocity - The agent's maximum speed
-    %   r            - How far an agent can fly past the lattice until 
-    %                  it will come back on the other side 
-    %   sight        - How far the agent is able to see around himself
+    %   angle          - The agents angle in radials
+    %   position       - The agents [x, y] position
+    %   velocity       - The agent's speed as [x speed, yspeed]
+    %   max_velocity   - The agent's maximum speed
+    %   r              - How far an agent can fly past the lattice until 
+    %                    it will come back on the other side 
+    %   sight          - How far the agent is able to see around himself
     %
     % AC Methods:
-    %   AC           - Initialize new AC instance
-    %   move         - Calculates new property values by calling functions
-    %   update       - Move the agent one step forward
-    %   borders      - Makes sure the borders of the lattice wrap around
-    %   reactive     - Implements a reactive strategy
+    %   AC             - Initialize new AC instance
+    %   move           - Calculates new velocity by calling functions
+    %   update         - Move the agent one step forward
+    %   borders        - Makes sure the borders of the lattice wrap around
+    %   reactive       - Implements a reactive strategy
+    %   proactive      - Calls proactive_move
+    %   proactive_move - Imiplements a proactive strategy
+    %   resume_speed   - Increases speed to max_speed, maintains angle
+    %   distance       - Calculates distance between two agents
+    %   density_turn   - Makes a turn based on closest agent
+    %   speeddown      - Slows down agent
+    %   speedup        - Speeds up agent
+    %   turn           - Turns agent specified amount of degrees
+    %   sameheading    - Checks if two agents have similar headings
+    %   oppositeheading- Checks if two agents have opposite headings
+    %   sideheading    - Checks if two agents have side headings
+    %   front          - Checks if one agent is in front of another
+    %   count_conflicts- Counts number of conflicts between all aircraft
     
     properties 
        angle 
@@ -29,7 +42,7 @@ classdef AC
     end
     
     methods 
-        function obj = AC(xpos, ypos, maxv, sight, angle) 
+        function obj = AC(xpos, ypos, maxv, sight) 
             % Initializes a new aircraft agent with an initial angle
             % position, speed and the maximum speed.
             obj.angle = (2*pi).*rand;
@@ -43,13 +56,7 @@ classdef AC
    
         function obj = move(obj,aircraft)
             % Call functions that will ensure separation
-            obj.velocity = obj.reactive(aircraft); %this changes obj's properties
-        end
-        
-        function obj = proactive_move(obj, ac)
-           % Input is array of AC type
-           obj = obj.proactive(obj); 
-           %obj.velocity = ;
+            obj.velocity = obj.reactive(aircraft); 
         end
         
         function obj = update(obj)
@@ -124,13 +131,21 @@ classdef AC
                          v= [obj.position(1) - threat_position(1), ...
                              obj.position(2) - threat_position(2)];
                      end 
-                     velocity = [-v(2) v(1)]; %turn 90 degrees away from their separation
-                     velocity = velocity/norm(velocity); %normalize velocity
+                     % turn 90 degrees away from their separation
+                     % and normalize to maintain speed
+                     velocity = [-v(2) v(1)]; 
+                     velocity = velocity/norm(velocity); 
                  end                
             end    
         end   
         
-        function obj = proactive(obj, ac)
+        function obj = proactive_move(obj)
+           % Input is array of AC type
+           obj = obj.proactive(); 
+           %obj.velocity = ;
+        end
+       
+        function obj = proactive(obj)
             % obj = entire array with all ac
             conflicts = [0, 0];
             num_ac = size(obj,2);
@@ -152,61 +167,75 @@ classdef AC
                     %iterate over conflicts
                     agent1 = obj(conflicts(c,1));
                     agent2 = obj(conflicts(c,2));
+                    %Almost collision
                     if distance(agent1, agent2) <= 10
-                        obj(conflicts(c,1)) = obj(conflicts(c,1)).densityturn(obj);
-                        obj(conflicts(c,2)) = obj(conflicts(c,2)).densityturn(obj);
-
+                        obj(conflicts(c,1)) = ...
+                            obj(conflicts(c,1)).densityturn(obj);
+                        obj(conflicts(c,2)) = ...
+                            obj(conflicts(c,2)).densityturn(obj);
                     elseif sameheading(agent1, agent2)
                         % Check if in front or back
                         if front(agent1, agent2)
                             %slow down one behind, speed up one in front
-                            obj(conflicts(c,2)) = obj(conflicts(c,2)).speeddown(0.9); 
-                            obj(conflicts(c,1)) = obj(conflicts(c,1)).speedup(1.1);
+                            obj(conflicts(c,2)) = ...
+                                obj(conflicts(c,2)).speeddown(0.9); 
+                            obj(conflicts(c,1)) = ...
+                                obj(conflicts(c,1)).speedup(1.1);
                         elseif front(agent2, agent1)
-                            obj(conflicts(c,1)) = obj(conflicts(c,1)).speeddown(0.9);
-                            obj(conflicts(c,2)) = obj(conflicts(c,2)).speedup(1.1);
+                            obj(conflicts(c,1)) = ...
+                                obj(conflicts(c,1)).speeddown(0.9);
+                            obj(conflicts(c,2)) = ...
+                                obj(conflicts(c,2)).speedup(1.1);
                         else %resume speed and 1 turns 3 degrees
                             obj(conflicts(c,1)).velocity = ...
                                 resume_speed(obj(conflicts(c,1))); 
                             obj(conflicts(c,2)).velocity = ...
                                 resume_speed(obj(conflicts(c,2))); 
-                        end
-                        
+                        end    
                     elseif oppositeheading(agent1, agent2)
                         obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(90);
                         obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(90);
-
                     else %sides
                         %find common direction
-                        %move the one least closest to the border of that direction
-                        
+                        %move the one least closest to the border 
+                        %of that direction                    
                         if agent1.velocity(1) < 0 && agent2.velocity(1) < 0
                             % both move left 
                             if agent1.position(1) > agent2.position(1)
-                                obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(45);
+                                obj(conflicts(c,1)) = ...
+                                    obj(conflicts(c,1)).turn(45);
                             else 
-                                obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(45);
+                                obj(conflicts(c,2)) = ...
+                                    obj(conflicts(c,2)).turn(45);
                             end 
-                        elseif agent1.position(1) > 0 && agent2.position(1) > 0 
+                        elseif agent1.position(1) > 0 && ...
+                                agent2.position(1) > 0 
                             % both move right
                             if agent1.position(1) > agent2.position(1)
-                                obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(45);
+                                obj(conflicts(c,2)) = ...
+                                    obj(conflicts(c,2)).turn(45);
                             else 
-                                obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(45);
+                                obj(conflicts(c,1)) = ...
+                                    obj(conflicts(c,1)).turn(45);
                             end 
-                        elseif agent1.position(2) < 0 && agent2.position(2) < 0
+                        elseif agent1.position(2) < 0 && ...
+                                agent2.position(2) < 0
                             % both move down
                             if agent1.position(2) > agent2.position(2)
-                                obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(45);
+                                obj(conflicts(c,2)) = ...
+                                    obj(conflicts(c,2)).turn(45);
                             else 
-                                obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(45);
+                                obj(conflicts(c,1)) = ...
+                                    obj(conflicts(c,1)).turn(45);
                             end 
                         else 
                             % both move up 
                             if agent1.position(2) > agent2.position(2)
-                                obj(conflicts(c,1)) = obj(conflicts(c,1)).turn(45);
+                                obj(conflicts(c,1)) = ...
+                                    obj(conflicts(c,1)).turn(45);
                             else 
-                                obj(conflicts(c,2)) = obj(conflicts(c,2)).turn(45);
+                                obj(conflicts(c,2)) = ...
+                                    obj(conflicts(c,2)).turn(45);
                             end 
                         end 
                     end
@@ -240,15 +269,18 @@ classdef AC
             %ac is object of aircraft to turn
             min_distance = 10000;
             for i = 1:length(obj)
-                if distance(ac,obj(i)) <= ac.sight && distance(ac,obj(i)) > 0 ...
+                if distance(ac,obj(i)) <= ac.sight && ...
+                        distance(ac,obj(i)) > 0 ...
                     && distance(ac,obj(i)) < min_distance
                     min_distance = distance(ac,obj(i));
                     min_distance_ac = obj(i);
                 end              
             end
-            new_direction = [-(min_distance_ac.position(1) - ac.position(1)) ...
-                        ,- (min_distance_ac.position(2) - ac.position(2))];
-            new_vector = norm(ac.velocity)/(norm(new_direction)) * new_direction;
+            new_direction = [-(min_distance_ac.position(1) - ...
+                ac.position(1)),- (min_distance_ac.position(2)...
+                - ac.position(2))];
+            new_vector = norm(ac.velocity)/(norm(new_direction))...
+                * new_direction;
             ac.velocity = new_vector; 
         end
         
@@ -257,7 +289,8 @@ classdef AC
             % Decreases the speed of the agent with 10%
             obj.velocity = obj.velocity * factor;
             if norm(obj.velocity) < min_velocity
-                obj.velocity = min_velocity/norm(obj.velocity)*obj.velocity; 
+                obj.velocity = min_velocity/norm(obj.velocity) ...
+                    *obj.velocity; 
             end 
         end
         
@@ -265,7 +298,8 @@ classdef AC
             % Increases the speed of the agent with 5%
             obj.velocity = obj.velocity * factor;
             if obj.velocity > norm(obj.max_velocity)
-               obj.velocity = obj.max_velocity/norm(obj.velocity)*obj.velocity; 
+               obj.velocity = obj.max_velocity/norm(obj.velocity)...
+                   *obj.velocity; 
             end
         end
         
@@ -273,8 +307,10 @@ classdef AC
             % Rotation according to these rules: 
             % x2=cos?x1?sin?y1 
             % y2=sin?x1+cos?y1
-            new_x = cosd(degrees)*obj.velocity(1) - sind(degrees)*obj.velocity(2);
-            new_y = sind(degrees)*obj.velocity(1) + cosd(degrees)*obj.velocity(2);
+            new_x = cosd(degrees)*obj.velocity(1) - ...
+                sind(degrees)*obj.velocity(2);
+            new_y = sind(degrees)*obj.velocity(1) + ...
+                cosd(degrees)*obj.velocity(2);
             obj.velocity(1) = new_x;
             obj.velocity(2) = new_y;
         end
@@ -319,30 +355,22 @@ classdef AC
             bool = 0;
             difference_y = b.position(2) - a.position(2);
             difference_x = b.position(1) - a.position(1);
-            if  difference_y <= (a.velocity(1)/(-a.velocity(2)))*difference_x
-                bool = 1; 
-                
+            if  difference_y <= (a.velocity(1)/(-a.velocity(2)))...
+                    *difference_x
+                bool = 1;            
             end 
-
         end 
         
-        function [distances] = calculate_distances(ac)
-            distances = zeros(1, length(ac));
-%             for i=1:length(ac)
-%                 distances(1,i) = distance
-%             end 
-        end
-        
-        function conflicts = count_conflicts(ac)
+        function conflicts = count_conflicts(ac, d)
             conflicts = 0;
             for i=1:length(ac)
                for j=1:length(ac)
-                    if i~=j && distance(ac(i),ac(j)) <= 20
+                    if i~=j && distance(ac(i),ac(j)) <= d
                         conflicts = conflicts + 1;
                     end
                end
             end
+            conflicts = conflicts/2;
         end
-        
      end  
 end 

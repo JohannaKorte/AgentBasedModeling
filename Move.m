@@ -2,9 +2,27 @@
 %example!
 
 classdef Move
+    % Move   Summary of Move
+    % This class implements the execution of precalculated movements for 
+    % all agents
+    %
+    % Move properties:
+    %   ac              - array of aircraft in simulation
+    %   lattice_size    - dimensions of the simulation lattice
+    %   step_counter=1  - keeps track of ticks
+    %
+    % Move methods:
+    %   Move            - initializes class 
+    %   run             - runs simulation by calculating move and updating
+    %   move            - calculates move
+    %   update_ac       - moves agent one step in velocity direction
+    %   border          - makes sure the grid 'wraps around'
+    %   render          - updates the simulation figure
+    
+    
     properties
-        ac              % array of aircraft in sim
-        lattice_size    % raster_grootte
+        ac               
+        lattice_size    
         step_counter=1;
     end
     
@@ -19,23 +37,23 @@ classdef Move
         % by first calculating the movement of the object, 
         % then updating the position of the object, then rendering all.
         % Function uses the 4 functions below
-        function run(obj, plane)
-            ticks = 1;
-            runs = 100;
+        function array = run(obj, plane, mode, ticks)
+            t = 1;
             %initialize distances & conflicts 
-            conflicts = zeros(1,runs);
-            conflicts(1,ticks) = obj.ac.count_conflicts();
-            %while true              
-            while ticks <= runs
-                obj = move(obj, 'proactive');
+            conflicts = zeros(1,ticks);
+            conflicts(1,t) = obj.ac.count_conflicts(20);
+            collisions = zeros(1,ticks);
+            collisions(1,t) = obj.ac.count_conflicts(3.4);
+            while t <= ticks
+                obj = move(obj, mode);
                 obj = update_ac(obj);
                 obj = borders(obj);
                 [obj,plane] = render(obj,plane);
-                conflicts(1,ticks) = obj.ac.count_conflicts();
-                ticks = ticks +1;
+                conflicts(1,t) = obj.ac.count_conflicts(20);
+                collisions(1,t) = obj.ac.count_conflicts(3.4);
+                t = t +1;
             end
-            plot(linspace(1,ticks-1,ticks-1),conflicts);
-
+            array = [conflicts;collisions]; 
         end
         
         
@@ -69,49 +87,21 @@ classdef Move
         
         function [obj, plane] = render(obj,plane)
             fprintf('Rendering %s \n',num2str(obj.step_counter))
-            for i=1:length(obj.ac)                
-                delete(plane.ac_figure_handles(i)); % delete previous figures (so you can show updated ones)
-                % viscircles([centerX, centerY], radius);
-                h = viscircles([obj.ac(i).position(1) obj.ac(i).position(2)], 1.7, 'Color', 'k');
-                plane.ac_figure_handles(i) = h;          
+            for i=1:length(obj.ac)        
+                % delete previous figures (so you can show updated ones)
+                delete(plane.ac_figure_handles(i));
+                delete(plane.conflict_handles(i));
+                h = rectangle('Position', [obj.ac(i).position(1)...
+                    obj.ac(i).position(2) 3.4 3.4], ...
+                    'Curvature', [1 1], 'FaceColor', 'k');
+                plane.ac_figure_handles(i) = h;    
+                plane.conflict_handles(i) = viscircles( ...
+                    [obj.ac(i).position(1) obj.ac(i).position(2)], ...
+                    20, 'Color', [0 166/255 214/255], 'LineWidth', 0.5);
             end
             drawnow;
             obj.step_counter=obj.step_counter+1;
         end
-                
-        
-
-
-% %         % Renders the whole obj per aircraft 
-% %         % (function 'render()' can be found in AC.m)
-% %         function [obj,plane] = render(obj,plane)
-% %             obj.step_counter=obj.step_counter+1;
-% %             fprintf('Rendering %s \n',num2str(obj.step_counter))
-% %             
-% %             % Theta = angle between plane and aircraft
-% %                     % atan2: check which quadrant
-% %                     % use norm = magnitude (sum of cross and dot product
-% %                     % squared and squared root)
-% %                     % cross and dot product from [velo 0] (=[vx vy 0]) 
-% %                     % and [1 0 0] (take x-axis as reference for theta)
-% %             for i=1:length(obj.ac)
-% %                 delete(plane.ac_figure_handles(i)); % delete previous figures (so you can show updated ones) 
-% %                 theta = atan2(norm(cross([obj.ac(i).velocity 0],[1 0 0])),dot([obj.ac(i).velocity 0],[1 0 0]));
-% %               %  x and y give outlines of triangle (= aircraft)
-% %                 x = [obj.ac(i).position(1)-2.5 obj.ac(i).position(1)+2.5 obj.ac(i).position(1)-2.5 obj.ac(i).position(1)-2.5];
-% %                 y = [obj.ac(i).position(2)-1.5 obj.ac(i).position(2) obj.ac(i).position(2)+1.5 obj.ac(i).position(2)+1.5];
-% %               % function 'patch()' creates a polygone (so it connects the coordinates).
-% %                     % patch(x, y, color ('k' = black))
-% %                 plane.ac_figure_handles(i) =  patch(x,y,'k');
-% %               % rotate the triangle (=aircraft)
-% %                     % rotate(surface, direction ([x y z]), degrees, origin ([x y z]))
-% %                 rotate(plane.ac_figure_handles(i), [0 0 1], rad2deg(theta), [obj.ac(i).position(1) obj.ac(i).position(2) 0]);
-% %             end
-% %             drawnow;
-% %         end
-        
-
-        
     end
     
 end
