@@ -3,7 +3,7 @@ Agent-based Modeling and Simulation in Air-Transport
 
 Authors: Johanna Korte and Luka Van de Sype
 _______________________________________________________________________________________________________________________
-This code encompanies a report that in detail describes the properties of the implemented model and agents. 
+This code accompanies a report that in detail describes the properties of the implemented model and agents. 
 _______________________________________________________________________________________________________________________
 INSTRUCTIONS
 To run the simulation, open separation_main.m in MATLAB and adjust the simulation parameters, like lattice dimensions,
