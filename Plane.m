@@ -1,6 +1,3 @@
-% This part of the code was largely inspired by the provided example code 
-% Plane.m of the flock_example!
-
 classdef Plane
     % Plane     Summary of Plane
     % This class is meant for initializing the simulation plane with the

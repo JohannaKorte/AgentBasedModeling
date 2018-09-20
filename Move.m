@@ -1,6 +1,3 @@
-%This class was inspired by the Flock class that was provided in the Flock
-%example!
-
 classdef Move
     % Move   Summary of Move
     % This class implements the execution of precalculated movements for 

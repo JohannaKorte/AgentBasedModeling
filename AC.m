@@ -167,7 +167,6 @@ classdef AC
                    end  
                 end
             end
-
             % Make adjustments for aircraft in conflict
             if size(conflicts, 1) > 1
                 for c=2:size(conflicts,1)
@@ -247,8 +246,7 @@ classdef AC
                         end 
                     end
                 end
-            end
-            
+            end 
             %For aircraft not in a conflict, set speed back to max speed 
             %max_speed/current_norm * current_velocity
             ac_in_conflict = unique(reshape(conflicts, 1, []));

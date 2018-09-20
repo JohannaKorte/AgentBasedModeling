@@ -1,4 +1,5 @@
 % Main file for Assignment 1
+% See README.txt for instructions
 
 %_______PARAMETERS_________________________________________________________
 xdim = 200;             %set x dimensions for simulation field 
