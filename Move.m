@@ -37,7 +37,7 @@ classdef Move
         % by first calculating the movement of the object, 
         % then updating the position of the object, then rendering all.
         % Function uses the 4 functions below
-        function array = run(obj, plane, mode, ticks)
+        function array = run(obj, plane, mode, ticks,visualize)
             t = 1;
             %initialize distances & conflicts 
             conflicts = zeros(1,ticks);
@@ -48,7 +48,9 @@ classdef Move
                 obj = move(obj, mode);
                 obj = update_ac(obj);
                 obj = borders(obj);
-                [obj,plane] = render(obj,plane);
+                if visualize
+                    [obj,plane] = render(obj,plane);
+                end 
                 conflicts(1,t) = obj.ac.count_conflicts(20);
                 collisions(1,t) = obj.ac.count_conflicts(3.4);
                 t = t +1;
@@ -86,7 +88,7 @@ classdef Move
         end
         
         function [obj, plane] = render(obj,plane)
-            fprintf('Rendering %s \n',num2str(obj.step_counter))
+            fprintf('Rendering %s \n', num2str(obj.step_counter))
             for i=1:length(obj.ac)        
                 % delete previous figures (so you can show updated ones)
                 delete(plane.ac_figure_handles(i));
