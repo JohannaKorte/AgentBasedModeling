@@ -4,51 +4,57 @@ classdef AC
     % that can be applied to these agents
     %
     % AC properties:
-    %   angle          - The agents angle in radials
-    %   position       - The agents [x, y] position
-    %   velocity       - The agent's speed as [x speed, yspeed]
-    %   max_velocity   - The agent's maximum speed
-    %   r              - How far an agent can fly past the lattice until 
+    %   angle           - The agents angle in radials
+    %   position        - The agents [x, y] position
+    %   velocity        - The agent's speed as [x speed, yspeed]
+    %   min_velocity    - The agent's minimum speed
+    %   max_velocity    - The agent's maximum speed
+    %   sep_goal        - The amount of separation an agent aims to keep
+    %   r               - How far an agent can fly past the lattice until 
     %                    it will come back on the other side 
-    %   sight          - How far the agent is able to see around himself
+    %   sight           - How far the agent is able to see around himself
     %
     % AC Methods:
-    %   AC             - Initialize new AC instance
-    %   move           - Calculates new velocity by calling functions
-    %   update         - Move the agent one step forward
-    %   borders        - Makes sure the borders of the lattice wrap around
-    %   reactive       - Implements a reactive strategy
-    %   proactive      - Calls proactive_move
-    %   proactive_move - Imiplements a proactive strategy
-    %   resume_speed   - Increases speed to max_speed, maintains angle
-    %   distance       - Calculates distance between two agents
-    %   density_turn   - Makes a turn based on closest agent
-    %   speeddown      - Slows down agent
-    %   speedup        - Speeds up agent
-    %   turn           - Turns agent specified amount of degrees
-    %   sameheading    - Checks if two agents have similar headings
-    %   oppositeheading- Checks if two agents have opposite headings
-    %   sideheading    - Checks if two agents have side headings
-    %   front          - Checks if one agent is in front of another
-    %   count_conflicts- Counts number of conflicts between all aircraft
+    %   AC              - Initialize new AC instance
+    %   move            - Calculates new velocity by calling functions
+    %   update          - Move the agent one step forward
+    %   borders         - Makes sure the borders of the lattice wrap around
+    %   reactive        - Implements a reactive strategy
+    %   proactive       - Calls proactive_move
+    %   proactive_move  - Imiplements a proactive strategy
+    %   resume_speed    - Increases speed to max_speed, maintains angle
+    %   distance        - Calculates distance between two agents
+    %   density_turn    - Makes a turn based on closest agent
+    %   speeddown       - Slows down agent
+    %   speedup         - Speeds up agent
+    %   turn            - Turns agent specified amount of degrees
+    %   sameheading     - Checks if two agents have similar headings
+    %   oppositeheading - Checks if two agents have opposite headings
+    %   sideheading     - Checks if two agents have side headings
+    %   front           - Checks if one agent is in front of another
+    %   count_conflicts - Counts number of conflicts between all aircraft
     
     properties 
        angle 
        position
        velocity
+       min_velocity
        max_velocity
+       sep_goal
        r
        sight
     end
     
     methods 
-        function obj = AC(xpos, ypos, maxv, sight) 
+        function obj = AC(xpos, ypos, minv, maxv, sep_goal, sight) 
             % Initializes a new aircraft agent with an initial angle
             % position, speed and the maximum speed.
             obj.angle = (2*pi).*rand;
             obj.position = [xpos ypos];
             obj.velocity = [cos(obj.angle) sin(obj.angle)];
+            obj.min_velocity = minv; 
             obj.max_velocity = maxv;
+            obj.sep_goal = sep_goal;
             obj.r = 0;  %Space around the square that needs to be traversed
             %before coming out again on the other side.
             obj.sight = sight; 
@@ -106,7 +112,7 @@ classdef AC
                 [d_nearest, nearest_index] = min(d(d > 0));
                 
                 % If nearest plane closer than min separation, act
-                 if d_nearest < 20
+                 if d_nearest < obj.sep_goal
                      %get closest aircraft index position and determine in 
                      %which quadrant they are of me;
                      threat_position = ac(nearest_index).position; 
@@ -152,7 +158,8 @@ classdef AC
             % Get all conflicts within 20 distance
             for i=1:size(obj,2) 
                 for j = 1:size(obj,2)
-                   if j~=i && distance(obj(i), obj(j)) < 20+10 && ...
+                   if j~=i && distance(obj(i), obj(j)) < ...
+                           obj(i).sep_goal + 10 && ...
                            distance(obj(i), obj(j)) <= obj(i).sight
                        if ismember([j,i], conflicts, 'rows') == 0
                             conflicts(end+1,1:2) = [i,j];
@@ -285,11 +292,11 @@ classdef AC
         end
         
         function obj = speeddown(obj, factor)
-            min_velocity = 0.1;
+            min_vel = obj.min_velocity;
             % Decreases the speed of the agent with 10%
             obj.velocity = obj.velocity * factor;
-            if norm(obj.velocity) < min_velocity
-                obj.velocity = min_velocity/norm(obj.velocity) ...
+            if norm(obj.velocity) < min_vel
+                obj.velocity = min_vel/norm(obj.velocity) ...
                     *obj.velocity; 
             end 
         end

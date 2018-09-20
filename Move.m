@@ -51,7 +51,8 @@ classdef Move
                 if visualize
                     [obj,plane] = render(obj,plane);
                 end 
-                conflicts(1,t) = obj.ac.count_conflicts(20);
+                conflicts(1,t) = obj.ac.count_conflicts(...
+                    obj.ac(1).sep_goal);
                 collisions(1,t) = obj.ac.count_conflicts(3.4);
                 t = t +1;
             end
@@ -93,13 +94,14 @@ classdef Move
                 % delete previous figures (so you can show updated ones)
                 delete(plane.ac_figure_handles(i));
                 delete(plane.conflict_handles(i));
-                h = rectangle('Position', [obj.ac(i).position(1)...
-                    obj.ac(i).position(2) 3.4 3.4], ...
+                h = rectangle('Position', [obj.ac(i).position(1)-1.7...
+                    obj.ac(i).position(2)-1.7 3.4 3.4], ...
                     'Curvature', [1 1], 'FaceColor', 'k');
                 plane.ac_figure_handles(i) = h;    
                 plane.conflict_handles(i) = viscircles( ...
                     [obj.ac(i).position(1) obj.ac(i).position(2)], ...
-                    20, 'Color', [0 166/255 214/255], 'LineWidth', 0.5);
+                    obj.ac(i).sep_goal, 'Color', [0 166/255 214/255], ...
+                    'LineWidth', 0.5);
             end
             drawnow;
             obj.step_counter=obj.step_counter+1;
