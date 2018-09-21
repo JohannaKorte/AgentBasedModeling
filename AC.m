@@ -110,39 +110,11 @@ classdef AC
                 
                 % get smallest distance 
                 [d_nearest, nearest_index] = min(d(d > 0));
+                if d_nearest <= obj.sep_goal
+                    obj = obj.turn(90);
+                end
                 
-                % If nearest plane closer than min separation, act
-                 if d_nearest < obj.sep_goal
-                     %get closest aircraft index position and determine in 
-                     %which quadrant they are of me;
-                     threat_position = ac(nearest_index).position; 
-                     % x smaller, y smaller
-                     if obj.position(1) < threat_position(1) && ...
-                             obj.position(2) < threat_position(2)
-                         v = [threat_position(1)-obj.position(1), ...
-                             threat_position(2)-obj.position(2)];
-                     % x smaller, y larger
-                     elseif obj.position(1) < threat_position(1) && ...
-                             obj.position(2) > threat_position(2)
-                         v = [threat_position(1)-obj.position(1), ...
-                             obj.position(2) - threat_position(2)];
-                     % x larger, y smaller
-                     elseif obj.position(1) > threat_position(1) && ...
-                             obj.position(2) < threat_position(2)
-                         v= [obj.position(1) - threat_position(1), ...
-                             threat_position(2)-obj.position(2)];
-                     % x larger, y larger
-                     elseif obj.position(1) > threat_position(1) && ...
-                             obj.position(2) > threat_position(2)
-                         v= [obj.position(1) - threat_position(1), ...
-                             obj.position(2) - threat_position(2)];
-                     end 
-                     % turn 90 degrees away from their separation
-                     % and normalize to maintain speed
-                     velocity = [-v(2) v(1)]; 
-                     velocity = velocity/norm(velocity); 
-                 end                
-            end    
+            end      
         end   
         
         function obj = proactive_move(obj)
@@ -159,7 +131,7 @@ classdef AC
             for i=1:size(obj,2) 
                 for j = 1:size(obj,2)
                    if j~=i && distance(obj(i), obj(j)) < ...
-                           obj(i).sep_goal + 10 && ...
+                           obj(i).sep_goal + 20 && ...
                            distance(obj(i), obj(j)) <= obj(i).sight
                        if ismember([j,i], conflicts, 'rows') == 0
                             conflicts(end+1,1:2) = [i,j];

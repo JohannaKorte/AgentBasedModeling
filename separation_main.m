@@ -11,7 +11,7 @@ separation_goal= 20;    %separation the agent aims to maintain
 sight = 20;             %how far an agent can see
 runs = 2;               %number of runs
 ticks = 10;             %number of ticks per run
-mode = 'proactive';     %'proactive' or 'reactive'
+mode = 'reactive';     %'proactive' or 'reactive'
 visualize = 1;          %1 (yes) or 0 (no)
 %__________________________________________________________________________
 
@@ -64,8 +64,6 @@ title('Number of collisions over time');
 xlabel('Ticks');
 ylabel('Number of collisions');
 max_collisions = max(collisions(:));
-yticks(linspace(0,max_collisions, max_collisions+1));
-yticks('manual')
 hold on;
 if runs > 1
 %plot average of runs
