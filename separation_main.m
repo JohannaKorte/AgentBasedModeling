@@ -9,9 +9,9 @@ max_velocity = 5;       %maximum velocity of the agent units/tick
 min_velocity = 0.5;     %minimum velocity of the agent units/tick
 separation_goal= 20;    %separation the agent aims to maintain
 sight = 50;             %how far an agent can see
-runs = 10;              %number of runs
-ticks = 100;            %number of ticks per run
-mode = 'proactive';     %'proactive' or 'reactive'
+runs = 1;              %number of runs
+ticks = 50;            %number of ticks per run
+mode = 'reactive';     %'proactive' or 'reactive'
 visualize = 1;          %1 (yes) or 0 (no)
 trace = 1;              %visualize trace lines to study emergent behavior
 %__________________________________________________________________________

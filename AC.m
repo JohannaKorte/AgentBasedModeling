@@ -129,7 +129,8 @@ classdef AC
             % obj = entire array with all ac
             conflicts = [0, 0];
             num_ac = size(obj,2);
-            % Get all conflicts within distance sep_goal + 20
+            % Get all conflicts within distance sep_goal + 20 or within
+            % sight
             for i=1:size(obj,2) 
                 for j = 1:size(obj,2)
                    if j~=i && distance(obj(i), obj(j)) < ...
@@ -220,7 +221,7 @@ classdef AC
                         end 
                     end
                 end
-            end 
+            end  
             %For aircraft not in a conflict, set speed back to max speed 
             %max_speed/current_norm * current_velocity
             ac_in_conflict = unique(reshape(conflicts, 1, []));
@@ -250,7 +251,7 @@ classdef AC
             for i = 1:length(obj)
                 if distance(ac,obj(i)) <= ac.sight && ...
                         distance(ac,obj(i)) > 0 ...
-                    && distance(ac,obj(i)) < min_distance
+                        && distance(ac,obj(i)) < min_distance
                     min_distance = distance(ac,obj(i));
                     min_distance_ac = obj(i);
                 end              
