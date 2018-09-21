@@ -109,7 +109,7 @@ classdef AC
                 end
                 
                 % get smallest distance 
-                [d_nearest, nearest_index] = min(d(d > 0));
+                [d_nearest, ~] = min(d(d > 0));
                 if d_nearest <= obj.sep_goal
                     obj = obj.turn(90);
                 end
