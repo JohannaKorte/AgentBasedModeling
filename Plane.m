@@ -17,6 +17,7 @@ classdef Plane
         conflict_handles
         plane_handle
         lattice_size
+        line_handles
     end
     
     methods

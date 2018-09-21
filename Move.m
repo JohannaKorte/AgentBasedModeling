@@ -30,27 +30,37 @@ classdef Move
             obj.lattice_size=lattice_size;
         end
         
-        function array = run(obj, plane, mode, ticks,visualize)
+        function array = run(obj, plane, mode, ticks,visualize, trace)
             t = 1;
             %initialize distances & conflicts 
             conflicts = zeros(1,ticks);
             conflicts(1,t) = obj.ac.count_conflicts(20);
             collisions = zeros(1,ticks);
             collisions(1,t) = obj.ac.count_conflicts(3.4);
+            array = struct;
             while t <= ticks 
                 obj = move(obj, mode);
                 obj = update_ac(obj);
                 obj = borders(obj);
                 % Only if asked to visualize
                 if visualize
-                    [obj,plane] = render(obj,plane);
+                    [obj,plane] = render(obj,plane,trace);
                 end 
                 conflicts(1,t) = obj.ac.count_conflicts(...
                     obj.ac(1).sep_goal);
                 collisions(1,t) = obj.ac.count_conflicts(3.4);
                 t = t +1;
             end
-            array = [conflicts;collisions]; 
+            distances = [];
+            for a=1:length(obj.ac)
+                for b=1:length(obj.ac)
+                    distances(a,b) = distance(obj.ac(a),...
+                            obj.ac(b));
+                end 
+            end
+            array.conflicts = conflicts;
+            array.collisions = collisions;
+            array.distances = distances;
         end
         
         
@@ -83,7 +93,7 @@ classdef Move
         end
 
         % creates the updates visualisation
-        function [obj, plane] = render(obj,plane)
+        function [obj, plane] = render(obj,plane, trace)
             fprintf('Rendering %s \n', num2str(obj.step_counter))
             for i=1:length(obj.ac)        
                 % delete previous figures (so you can show updated ones)
@@ -99,6 +109,21 @@ classdef Move
                     [obj.ac(i).position(1) obj.ac(i).position(2)], ...
                     obj.ac(i).sep_goal, 'Color', [0 166/255 214/255], ...
                     'LineWidth', 0.5);
+                % Display trace lines if wanted 
+                if trace
+                    if abs(obj.ac(i).previous_pos(1) - ...
+                            obj.ac(i).position(1)) <= ...
+                            obj.lattice_size(1) -10 ...
+                            && abs(obj.ac(i).previous_pos(2)- ...
+                            obj.ac(i).position(2)) <= ...
+                            obj.lattice_size(2)-10
+                        plane.line_handles(i) = line(...
+                        [obj.ac(i).previous_pos(1) ...
+                        obj.ac(i).position(1)], ...
+                        [obj.ac(i).previous_pos(2) ...
+                        obj.ac(i).position(2)], 'color', 'red');
+                    end 
+                end 
             end
             drawnow;
             obj.step_counter=obj.step_counter+1;

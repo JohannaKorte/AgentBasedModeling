@@ -43,6 +43,7 @@ classdef AC
        sep_goal
        r
        sight
+       previous_pos
     end
     
     methods 
@@ -68,6 +69,8 @@ classdef AC
         function obj = update(obj)
             % Make the agent move one step into its desired direction by
             % updating its position using the velocity attribute
+            obj.previous_pos(1) = obj.position(1);
+            obj.previous_pos(2) = obj.position(2);
             obj.position = obj.position + obj.velocity;
         end
         
@@ -120,14 +123,13 @@ classdef AC
         function obj = proactive_move(obj)
            % Input is array of AC type
            obj = obj.proactive(); 
-           %obj.velocity = ;
         end
        
         function obj = proactive(obj)
             % obj = entire array with all ac
             conflicts = [0, 0];
             num_ac = size(obj,2);
-            % Get all conflicts within 20 distance
+            % Get all conflicts within distance sep_goal + 20
             for i=1:size(obj,2) 
                 for j = 1:size(obj,2)
                    if j~=i && distance(obj(i), obj(j)) < ...

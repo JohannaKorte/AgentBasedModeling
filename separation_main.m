@@ -13,10 +13,12 @@ runs = 10;              %number of runs
 ticks = 100;            %number of ticks per run
 mode = 'proactive';     %'proactive' or 'reactive'
 visualize = 1;          %1 (yes) or 0 (no)
+trace = 1;              %visualize trace lines to study emergent behavior
 %__________________________________________________________________________
 
 conflicts = zeros(runs,ticks);
 collisions = zeros(runs,ticks);
+distances = [];
 
 %run multiple runs as specified above
 for r=1:runs 
@@ -32,13 +34,21 @@ for r=1:runs
         f = figure;   %initialize new figure for simulation
         plane = Plane(f,[xdim ydim], aircraft); %Render image of aircraft
     end 
-    results = a.run(plane, mode, ticks, visualize); %runs & draws the sim
-    conflicts(r,:) = results(1,:); %stores number of collisions/conflicts
-    collisions(r,:) = results(2,:);
+    results = a.run(plane, mode, ticks, visualize, trace); %runs the sim
+    conflicts(r,:) = results.conflicts; 
+    collisions(r,:) = results.collisions;
+    distances = [distances;results.distances];
     if visualize
         close(f);
     end
 end 
+
+fprintf("=====================")
+%Average distance after n ticks 
+distances = distances(distances>0);
+distances = distances(distances<=sight);
+fprintf('average distance of agents within sight: %s\n', ...
+    num2str(mean(distances)))
 
 % Plot conflict results 
 figure;
@@ -75,4 +85,9 @@ else
     fprintf('Total number of collisions during run: %s\n', ... 
     num2str(sum(collisions(1,:))))
 end
+
+%Trace plot to detect movement patterns 
+
+
+
 
