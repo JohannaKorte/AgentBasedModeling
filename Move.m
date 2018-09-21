@@ -30,10 +30,6 @@ classdef Move
             obj.lattice_size=lattice_size;
         end
         
-        % Makes the simulation run, 
-        % by first calculating the movement of the object, 
-        % then updating the position of the object, then rendering all.
-        % Function uses the 4 functions below
         function array = run(obj, plane, mode, ticks,visualize)
             t = 1;
             %initialize distances & conflicts 
@@ -41,10 +37,11 @@ classdef Move
             conflicts(1,t) = obj.ac.count_conflicts(20);
             collisions = zeros(1,ticks);
             collisions(1,t) = obj.ac.count_conflicts(3.4);
-            while t <= ticks
+            while t <= ticks 
                 obj = move(obj, mode);
                 obj = update_ac(obj);
                 obj = borders(obj);
+                % Only if asked to visualize
                 if visualize
                     [obj,plane] = render(obj,plane);
                 end 
@@ -57,7 +54,7 @@ classdef Move
         end
         
         
-        % Moves the whole obj (per aircraft)
+        % Moves the whole obj (per aircraft), depends on agent type
         % (function 'move()' can be found in AC.m)
         function obj = move(obj, mode)
             if strcmp(mode, 'reactive')
@@ -84,17 +81,20 @@ classdef Move
                 obj.ac(i) = obj.ac(i).borders(obj.lattice_size);
             end
         end
-        
+
+        % creates the updates visualisation
         function [obj, plane] = render(obj,plane)
             fprintf('Rendering %s \n', num2str(obj.step_counter))
             for i=1:length(obj.ac)        
                 % delete previous figures (so you can show updated ones)
                 delete(plane.ac_figure_handles(i));
                 delete(plane.conflict_handles(i));
+                % black circle representing the agent
                 h = rectangle('Position', [obj.ac(i).position(1)-1.7...
                     obj.ac(i).position(2)-1.7 3.4 3.4], ...
                     'Curvature', [1 1], 'FaceColor', 'k');
                 plane.ac_figure_handles(i) = h;    
+                % Light blue circle representing conflict zone per agent
                 plane.conflict_handles(i) = viscircles( ...
                     [obj.ac(i).position(1) obj.ac(i).position(2)], ...
                     obj.ac(i).sep_goal, 'Color', [0 166/255 214/255], ...
