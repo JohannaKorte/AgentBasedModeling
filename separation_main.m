@@ -8,7 +8,7 @@ aircraft_count = 40;    %number of aircraft in the field
 max_velocity = 5;       %maximum velocity of the agent units/tick
 min_velocity = 0.5;     %minimum velocity of the agent units/tick
 separation_goal= 20;    %separation the agent aims to maintain
-sight = 50;             %how far an agent can see
+sight = 100;            %how far an agent can see
 runs = 10;              %number of runs
 ticks = 100;            %number of ticks per run
 mode = 'proactive';     %'proactive' or 'reactive'
@@ -43,7 +43,7 @@ for r=1:runs
     end
 end 
 
-fprintf("=====================")
+fprintf("=====================\n")
 %Average distance after n ticks 
 distances = distances(distances>0);
 distances = distances(distances<=sight);
@@ -55,7 +55,6 @@ figure;
 title('Number of conflicts over time');
 xlabel('Ticks');
 ylabel('Number of conflicts');
-yticks(linspace(0,aircraft_count, aircraft_count+1));
 hold on
 if runs > 1 
     %plot average of runs
