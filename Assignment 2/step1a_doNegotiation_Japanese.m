@@ -1,4 +1,4 @@
-%% step1a_doNegotiation_Japanese.m description
+% step1a_doNegotiation_Japanese.m description
 % Add your Japanese agent models and edit this file to create your Japanese
 % auction.
 
@@ -31,49 +31,45 @@
 % (determineRoutingAndSynchronization.m, calculateFuelSavings.m) and
 % step1c_updateProperties.m.
 
-%% Loop through the combinations of flights that are allowed to communicate.
-for i = 1:length(communicationCandidates(:,1))     
-    % Store flight ID of flight i in variable.
-    acNr1 = communicationCandidates(i,1);     
-    
-    % Determine the number of communication candidates for flight i.
-    nCandidates = nnz(communicationCandidates(i,2:end)); 
+% Step size to increase the auction bid by 
+increaseBid = 20; 
 
-    % Loop over all candidates of flight i.
-    for j = 2:nCandidates+1
-        % Store flight ID of candidate flight j in variable.
-        acNr2 = communicationCandidates(i,j);  
-        
-        % Check whether the flights are still available for communication.
-        if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1             
-            % This file contains code to perform the routing and
-            % synchronization, and to determine the potential fuel savings.
-            step1b_routingSynchronizationFuelSavings
+% Find the agent that can communicate with most others and choose it as a
+% auctioneer
+most_connected_agents_index = find(communicationCandidates(:,end));
+% Pick first index to be auctioneer
+auctioneer = communicationCandidates(most_connected_agents_index(1),1);
+acNr1 = auctioneer; 
+bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
 
-            % If the involved flights can reduce their cumulative fuel burn
-            % the formation route is accepted. This shows the greedy
-            % algorithm, where the first formation with positive fuel
-            % savings is accepted.
-            if potentialFuelSavings > 0     
-                % In the greedy algorithm the fuel savings are divided
-                % equally between acNr1 and acNr2, according to the
-                % formation size of both flights. In the auction the value
-                % of fuelSavingsOffer is decided upon by the bidding agent.
-                fuelSavingsOffer = potentialFuelSavings* ...
-                    flightsData(acNr1,19)/ ...
-                    (flightsData(acNr1,19) + flightsData(acNr2,19));
+% Start with current_bid of 0, and increase it. When the personal limit is
+% reached for a bidder, it exits the auction. The last bidder left takes
+% the bid. 
+% Bid = kg of fuel that the manager will receive  
+% TODO: Start bid higher than 1? otherwise when there is only one bidder 
+% from the start, he or she will take the bid and the auctioneer gets 0.
+current_bid = 0; 
 
-                % In the greedy algorithm the future fuel savings are
-                % divided equally between acNr1 and acNr2, according to the
-                % formation size of both flights. This is also the case for
-                % the auctions.
-                divisionFutureSavings = flightsData(acNr1,19)/ ...
-                    (flightsData(acNr1,19) + flightsData(acNr2,19));
-                
-                % Update the relevant flight properties for the formation
-                % that is accepted.
-                step1c_updateProperties
-            end          
-        end
-    end
+while length(bidders) > 1
+    current_bid = current_bid + increaseBid; %increase bid
+    %loop over bidders to see if anyone wants to exit
+    for acNr2 = bidders
+        step1b_routingSynchronizationFuelSavings
+        % If bidder cannot stay, remove from bidders list 
+        if potentialFuelSavings < 0 || potentialFuelSavings < current_bid
+            bidders = bidders(bidders~=acNr2); 
+        end 
+        % TODO: If bidder does not want to stay, remove from bidders list
+    end 
 end
+
+if length(bidders) == 1
+    acNr2 = bidders(1);
+    fuelSavingsOffer = potentialFuelSavings* flightsData(acNr1,19)/ ...
+        (flightsData(acNr1,19) + flightsData(acNr2,19));
+    divisionFutureSavings = flightsData(acNr1,19)/ ...
+        (flightsData(acNr1,19) + flightsData(acNr2,19));
+    % Update properties to accept the formation 
+    step1c_updateProperties
+end 
+
