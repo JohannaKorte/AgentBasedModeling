@@ -1,4 +1,4 @@
-%% step1a_doNegotiation_Dutch.m description
+% step1a_doNegotiation_Dutch.m description
 % Add your Dutch agent models and edit this file to create your Dutch
 % auction.
 
@@ -31,49 +31,45 @@
 % (determineRoutingAndSynchronization.m, calculateFuelSavings.m) and
 % step1c_updateProperties.m.
 
-%% Loop through the combinations of flights that are allowed to communicate.
-for i = 1:length(communicationCandidates(:,1))     
-    % Store flight ID of flight i in variable.
-    acNr1 = communicationCandidates(i,1);     
-    
-    % Determine the number of communication candidates for flight i.
-    nCandidates = nnz(communicationCandidates(i,2:end)); 
+% Step size to decrease the auction bid by 
+decreaseBid = 20; 
 
-    % Loop over all candidates of flight i.
-    for j = 2:nCandidates+1
-        % Store flight ID of candidate flight j in variable.
-        acNr2 = communicationCandidates(i,j);  
-        
-        % Check whether the flights are still available for communication.
-        if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1             
-            % This file contains code to perform the routing and
-            % synchronization, and to determine the potential fuel savings.
-            step1b_routingSynchronizationFuelSavings
+% Find the agent that can communicate with most others and choose it as an
+% agent
+most_connected_agents_index = find(communicationCandidates(:,end));
+% Pick first index to be auctioneer
+auctioneer = communicationCandidates(most_connected_agents_index(1),1);
+acNr1 = auctioneer; 
+bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
 
-            % If the involved flights can reduce their cumulative fuel burn
-            % the formation route is accepted. This shows the greedy
-            % algorithm, where the first formation with positive fuel
-            % savings is accepted.
-            if potentialFuelSavings > 0     
-                % In the greedy algorithm the fuel savings are divided
-                % equally between acNr1 and acNr2, according to the
-                % formation size of both flights. In the auction the value
-                % of fuelSavingsOffer is decided upon by the bidding agent.
-                fuelSavingsOffer = potentialFuelSavings* ...
-                    flightsData(acNr1,19)/ ...
-                    (flightsData(acNr1,19) + flightsData(acNr2,19));
-
-                % In the greedy algorithm the future fuel savings are
-                % divided equally between acNr1 and acNr2, according to the
-                % formation size of both flights. This is also the case for
-                % the auctions.
-                divisionFutureSavings = flightsData(acNr1,19)/ ...
-                    (flightsData(acNr1,19) + flightsData(acNr2,19));
-                
-                % Update the relevant flight properties for the formation
-                % that is accepted.
-                step1c_updateProperties
-            end          
+% Start with a high current_bid, and decrease it until a bidder wants to 
+% take the bid
+% Bid = kg of fuel that the manager will receive  
+accepted_bid = 'false';
+current_bid = 1000; %highest fuel savings 
+while strcmp(accepted_bid,'false')
+    if current_bid >= 0 + decreaseBid %ensure feasible bid
+        current_bid = current_bid - decreaseBid;
+        for acNr2 = bidders
+            % Check if auctioneer and bidder can still communicate
+            if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
+                step1b_routingSynchronizationFuelSavings %calculate savings
+                % Can acNr2 take the bid?
+                if 0 < potentialFuelSavings && ...
+                        potentialFuelSavings >= current_bid
+                    % TODO: Does acNr2 want to take it?
+                    fuelSavingsOffer = potentialFuelSavings* ...
+                        flightsData(acNr1,19)/ ...
+                        (flightsData(acNr1,19) + flightsData(acNr2,19));
+                    divisionFutureSavings = flightsData(acNr1,19)/ ...
+                        (flightsData(acNr1,19) + flightsData(acNr2,19));
+                    % Update properties to accept the formation 
+                    step1c_updateProperties
+                    accepted_bid = 'true'; 
+                end 
+            end 
         end
+    else
+        break; 
     end
-end
+end    
