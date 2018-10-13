@@ -1,4 +1,4 @@
-%% step1a_doNegotiation_Vickrey.m description
+% step1a_doNegotiation_Vickrey.m description
 % Add your Vickrey agent models and edit this file to create your Vickrey
 % auction.
 
@@ -30,50 +30,45 @@
 % It contains two files: step1b_routingSynchronizationFuelSavings.m
 % (determineRoutingAndSynchronization.m, calculateFuelSavings.m) and
 % step1c_updateProperties.m.
+% _________________________________________________________________________
 
-%% Loop through the combinations of flights that are allowed to communicate.
-for i = 1:length(communicationCandidates(:,1))     
-    % Store flight ID of flight i in variable.
-    acNr1 = communicationCandidates(i,1);     
-    
-    % Determine the number of communication candidates for flight i.
-    nCandidates = nnz(communicationCandidates(i,2:end)); 
+%TODO: SOLVE WEIRD VISUALIZATION 
 
-    % Loop over all candidates of flight i.
-    for j = 2:nCandidates+1
-        % Store flight ID of candidate flight j in variable.
-        acNr2 = communicationCandidates(i,j);  
-        
-        % Check whether the flights are still available for communication.
-        if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1             
-            % This file contains code to perform the routing and
-            % synchronization, and to determine the potential fuel savings.
-            step1b_routingSynchronizationFuelSavings
 
-            % If the involved flights can reduce their cumulative fuel burn
-            % the formation route is accepted. This shows the greedy
-            % algorithm, where the first formation with positive fuel
-            % savings is accepted.
-            if potentialFuelSavings > 0     
-                % In the greedy algorithm the fuel savings are divided
-                % equally between acNr1 and acNr2, according to the
-                % formation size of both flights. In the auction the value
-                % of fuelSavingsOffer is decided upon by the bidding agent.
-                fuelSavingsOffer = potentialFuelSavings* ...
-                    flightsData(acNr1,19)/ ...
-                    (flightsData(acNr1,19) + flightsData(acNr2,19));
+% Find the agent that can communicate with most others and choose it as a
+% auctioneer
+most_connected_agents_index = find(communicationCandidates(:,end));
+% Pick first index to be auctioneer
+auctioneer = communicationCandidates(most_connected_agents_index(1),1);
+acNr1 = auctioneer; 
+bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
+highest_bid = 0; 
+second_bid = 0;
+highest_bidder = 0;
 
-                % In the greedy algorithm the future fuel savings are
-                % divided equally between acNr1 and acNr2, according to the
-                % formation size of both flights. This is also the case for
-                % the auctions.
-                divisionFutureSavings = flightsData(acNr1,19)/ ...
-                    (flightsData(acNr1,19) + flightsData(acNr2,19));
-                
-                % Update the relevant flight properties for the formation
-                % that is accepted.
-                step1c_updateProperties
-            end          
-        end
-    end
-end
+%Loop over bidders
+for acNr2 = bidders
+    if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
+        %Calculate possible savings
+        step1b_routingSynchronizationFuelSavings
+        %TODO: Determine bid 
+        bid = potentialFuelSavings;
+        %Update highest bid & second highest bid 
+        %TODO: What to do when second bid is still 0?
+        if bid > 0 && bid > highest_bid
+            second_bid = highest_bid;
+            highest_bid = bid; 
+            highest_bidder = acNr2;
+        end 
+    end 
+end 
+
+if highest_bid > 0 
+    % Adjust bid to second highest bid
+    fuelSavingsOffer = second_bid;
+    divisionFutureSavings = flightsData(acNr1,19)/ ...
+        (flightsData(acNr1,19) + flightsData(acNr2,19));
+    % Update properties to accept the formation 
+    step1c_updateProperties
+end 
+
