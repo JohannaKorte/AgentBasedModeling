@@ -1,4 +1,4 @@
-%% step1a_doNegotiation_English.m description
+% step1a_doNegotiation_English.m description
 % Add your English agent models and edit this file to create your English
 % auction.
 
@@ -31,49 +31,46 @@
 % (determineRoutingAndSynchronization.m, calculateFuelSavings.m) and
 % step1c_updateProperties.m.
 
-%% Loop through the combinations of flights that are allowed to communicate.
-for i = 1:length(communicationCandidates(:,1))     
-    % Store flight ID of flight i in variable.
-    acNr1 = communicationCandidates(i,1);     
-    
-    % Determine the number of communication candidates for flight i.
-    nCandidates = nnz(communicationCandidates(i,2:end)); 
 
-    % Loop over all candidates of flight i.
-    for j = 2:nCandidates+1
-        % Store flight ID of candidate flight j in variable.
-        acNr2 = communicationCandidates(i,j);  
-        
-        % Check whether the flights are still available for communication.
-        if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1             
-            % This file contains code to perform the routing and
-            % synchronization, and to determine the potential fuel savings.
-            step1b_routingSynchronizationFuelSavings
+%TODO: What to do when there is only 1 bidder from the beginning?
+%TODO: FIX VISUALIZATION 
 
-            % If the involved flights can reduce their cumulative fuel burn
-            % the formation route is accepted. This shows the greedy
-            % algorithm, where the first formation with positive fuel
-            % savings is accepted.
-            if potentialFuelSavings > 0     
-                % In the greedy algorithm the fuel savings are divided
-                % equally between acNr1 and acNr2, according to the
-                % formation size of both flights. In the auction the value
-                % of fuelSavingsOffer is decided upon by the bidding agent.
-                fuelSavingsOffer = potentialFuelSavings* ...
-                    flightsData(acNr1,19)/ ...
-                    (flightsData(acNr1,19) + flightsData(acNr2,19));
+% Find the agent that can communicate with most others and choose it as a
+% auctioneer
+most_connected_agents_index = find(communicationCandidates(:,end));
+% Pick first index to be auctioneer
+auctioneer = communicationCandidates(most_connected_agents_index(1),1);
+acNr1 = auctioneer; 
+bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
 
-                % In the greedy algorithm the future fuel savings are
-                % divided equally between acNr1 and acNr2, according to the
-                % formation size of both flights. This is also the case for
-                % the auctions.
-                divisionFutureSavings = flightsData(acNr1,19)/ ...
-                    (flightsData(acNr1,19) + flightsData(acNr2,19));
-                
-                % Update the relevant flight properties for the formation
-                % that is accepted.
-                step1c_updateProperties
-            end          
-        end
-    end
-end
+highest_bidder = 0; 
+current_bid = 0; 
+increase = 1;
+step = 10; 
+while increase ~= 0 && length(bidders) > 1
+    increase = 0; 
+    % Loop over active bidders
+    for acNr2 = bidders
+        step1b_routingSynchronizationFuelSavings
+        % If bidder cannot stay, remove from bidders list 
+        disp(potentialFuelSavings)
+        if potentialFuelSavings < 0 || potentialFuelSavings <= current_bid
+            bidders = bidders(bidders~=acNr2); 
+        else 
+            %TO ADJUST: Does the bidder want to increase the bid? 
+            %If so by how much?
+            current_bid = min([potentialFuelSavings current_bid+step]);
+            highest_bidder = acNr2; 
+            increase = 1; 
+        end  
+    end     
+end     
+
+if highest_bidder ~= 0
+    acNr2 = highest_bidder; 
+    fuelSavingsOffer = current_bid;
+    divisionFutureSavings = flightsData(acNr1,19)/ ...
+        (flightsData(acNr1,19) + flightsData(acNr2,19));
+    % Update properties to accept the formation 
+    step1c_updateProperties
+end 
