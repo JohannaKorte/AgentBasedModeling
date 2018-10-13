@@ -65,6 +65,7 @@ end
 
 if highest_bid > 0 
     % Adjust bid to second highest bid
+    acNr2 = highest_bidder; 
     fuelSavingsOffer = second_bid;
     divisionFutureSavings = flightsData(acNr1,19)/ ...
         (flightsData(acNr1,19) + flightsData(acNr2,19));
