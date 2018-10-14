@@ -51,25 +51,30 @@ bidders = communicationCandidates(most_connected_agents_index(1), 2:end);
 current_bid = 0; 
 
 while length(bidders) > 1
-    current_bid = current_bid + increaseBid; %increase bid
     %loop over bidders to see if anyone wants to exit
     for acNr2 = bidders
         step1b_routingSynchronizationFuelSavings
         % If bidder cannot stay, remove from bidders list 
-        if potentialFuelSavings < 0 || potentialFuelSavings < current_bid
+        if potentialFuelSavings <= 0 || potentialFuelSavings < current_bid
             bidders = bidders(bidders~=acNr2); 
+            break
         end 
         % TODO: If bidder does not want to stay, remove from bidders list
     end 
+    
+    current_bid = current_bid + increaseBid;
 end
 
-if length(bidders) == 1
+if length(bidders) == 1 && current_bid ~=0
     acNr2 = bidders(1);
-    fuelSavingsOffer = potentialFuelSavings* flightsData(acNr1,19)/ ...
-        (flightsData(acNr1,19) + flightsData(acNr2,19));
-    divisionFutureSavings = flightsData(acNr1,19)/ ...
-        (flightsData(acNr1,19) + flightsData(acNr2,19));
-    % Update properties to accept the formation 
-    step1c_updateProperties
+    step1b_routingSynchronizationFuelSavings
+    if potentialFuelSavings ~= 0
+        fuelSavingsOffer = potentialFuelSavings* flightsData(acNr1,19)/ ...
+            (flightsData(acNr1,19) + flightsData(acNr2,19));
+        divisionFutureSavings = flightsData(acNr1,19)/ ...
+            (flightsData(acNr1,19) + flightsData(acNr2,19));
+        % Update properties to accept the formation
+        step1c_updateProperties
+    end 
 end 
 
