@@ -75,7 +75,9 @@ for j = 2:nCandidates+1
         % If the involved flights can reduce their cumulative fuel burn
         % the formation route is stored.
         if potentialFuelSavings > 0    
-            % For now divide 50-50,but should depend on the contractor.
+            % TODO: For now divide 50-50,
+            % TODO: STRATEGY! 
+            % but should depend on the contractor.
             division = flightsData(acNr1,19)/ ...
                 (flightsData(acNr1,19) + flightsData(acNr2,19));
             % store a ll the bids
@@ -84,16 +86,22 @@ for j = 2:nCandidates+1
         end
     end
 end
-% Chose the winning contractor
-[fuelSavingsOffer, row_number] = max(biddings(:,2)); 
-contractor = biddings(row_number,1);
 
-% In the CNP the value of divisionFutureSavings is decided upon by the 
-% contractor agent.
-%divisionFutureSavings = flightsData(acNr1,19)/ ...
-%    (flightsData(acNr1,19) + flightsData(contractor,19));
-divisionFutureSavings = division;
+%check if there are any biddings
+if nnz(biddings) ~= 0
+    % Chose the winning contractor
+    [fuelSavingsOffer, row_number] = max(biddings(:,2)); 
+    acNr2 = biddings(row_number,1); 
+    step1b_routingSynchronizationFuelSavings
+    division = flightsData(acNr1,19)/ ...
+                    (flightsData(acNr1,19) + flightsData(acNr2,19));
+    % In the CNP the value of divisionFutureSavings is decided upon by the 
+    % contractor agent.
+    % TODO: STRATEGY! 
+    divisionFutureSavings = division;
 
-% Update the relevant flight properties for the formation
-% that is accepted.
-step1c_updateProperties
+    % Update the relevant flight properties for the formation
+    % that is accepted.
+    step1c_updateProperties
+
+end
