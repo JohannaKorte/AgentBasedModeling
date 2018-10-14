@@ -53,9 +53,8 @@ while increase ~= 0 && length(bidders) > 1
     for acNr2 = bidders
         step1b_routingSynchronizationFuelSavings
         % If bidder cannot stay, remove from bidders list 
-        disp(potentialFuelSavings)
-        if potentialFuelSavings < 0 || potentialFuelSavings <= current_bid
-            bidders = bidders(bidders~=acNr2); 
+        if potentialFuelSavings <= 0 || potentialFuelSavings <= current_bid
+             bidders = bidders(bidders~=acNr2); 
         else 
             %TO ADJUST: Does the bidder want to increase the bid? 
             %If so by how much?
@@ -68,6 +67,7 @@ end
 
 if highest_bidder ~= 0
     acNr2 = highest_bidder; 
+    step1b_routingSynchronizationFuelSavings
     fuelSavingsOffer = current_bid;
     divisionFutureSavings = flightsData(acNr1,19)/ ...
         (flightsData(acNr1,19) + flightsData(acNr2,19));
