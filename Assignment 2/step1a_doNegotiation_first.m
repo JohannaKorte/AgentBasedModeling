@@ -61,6 +61,7 @@ end
 
 if highest_bid > 0 
     acNr2 = highest_bidder; 
+    step1b_routingSynchronizationFuelSavings
     % Adjust bid to highest bid
     fuelSavingsOffer = highest_bid;
     divisionFutureSavings = flightsData(acNr1,19)/ ...
