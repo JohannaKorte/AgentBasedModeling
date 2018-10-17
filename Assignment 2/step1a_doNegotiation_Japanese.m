@@ -45,7 +45,8 @@ bidders = communicationCandidates(most_connected_agents_index(1), 2:end);
 % Start with current_bid of 0, and increase it. When the personal limit is
 % reached for a bidder, it exits the auction. The last bidder left takes
 % the bid. 
-% Bid = kg of fuel that the manager will receive  
+% Bid = kg of fuel that the auctioneer will receive  
+
 % TODO: Start bid higher than 1? otherwise when there is only one bidder 
 % from the start, he or she will take the bid and the auctioneer gets 0.
 current_bid = 0; 
@@ -59,9 +60,18 @@ while length(bidders) > 1
             bidders = bidders(bidders~=acNr2); 
             break
         end 
-        % TODO: If bidder does not want to stay, remove from bidders list
+        % If bidder does not want to stay, remove from bidders list
+        side_auctioneer = determineAlliance(flightsData,...
+                        nAircraft, acNr1);
+        side_bidder = determineAlliance(flightsData, ...
+                        nAircraft, acNr2);
+        if side_auctioneer == 1 || side_bidder == 1
+           if 0.5*potentialFuelSavings < current_bid
+                bidders = bidders(bidders~=acNr2); 
+                break
+           end 
+        end           
     end 
-    
     current_bid = current_bid + increaseBid;
 end
 
@@ -69,8 +79,7 @@ if length(bidders) == 1 && current_bid ~=0
     acNr2 = bidders(1);
     step1b_routingSynchronizationFuelSavings
     if potentialFuelSavings ~= 0
-        fuelSavingsOffer = potentialFuelSavings* flightsData(acNr1,19)/ ...
-            (flightsData(acNr1,19) + flightsData(acNr2,19));
+        fuelSavingsOffer = current_bid;
         divisionFutureSavings = flightsData(acNr1,19)/ ...
             (flightsData(acNr1,19) + flightsData(acNr2,19));
         % Update properties to accept the formation
