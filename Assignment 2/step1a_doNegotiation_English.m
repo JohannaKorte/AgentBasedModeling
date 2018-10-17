@@ -32,9 +32,6 @@
 % step1c_updateProperties.m.
 
 
-%TODO: What to do when there is only 1 bidder from the beginning?
-%TODO: FIX VISUALIZATION 
-
 % Find the agent that can communicate with most others and choose it as a
 % auctioneer
 most_connected_agents_index = find(communicationCandidates(:,end));
@@ -46,21 +43,37 @@ bidders = communicationCandidates(most_connected_agents_index(1), 2:end);
 highest_bidder = 0; 
 current_bid = 0; 
 increase = 1;
-step = 10; 
 while increase ~= 0 && length(bidders) > 1
     increase = 0; 
     % Loop over active bidders
     for acNr2 = bidders
         step1b_routingSynchronizationFuelSavings
-        % If bidder cannot stay, remove from bidders list 
+        % If bidder cannot afford to bid, remove from bidders list 
         if potentialFuelSavings <= 0 || potentialFuelSavings <= current_bid
              bidders = bidders(bidders~=acNr2); 
         else 
-            %TO ADJUST: Does the bidder want to increase the bid? 
-            %If so by how much?
-            current_bid = min([potentialFuelSavings current_bid+step]);
-            highest_bidder = acNr2; 
-            increase = 1; 
+            side_auctioneer = determineAlliance(flightsData,...
+                        nAircraft, acNr1);
+            side_bidder = determineAlliance(flightsData, ...
+                        nAircraft, acNr2);
+            % Determine whether the bidder will increase bid
+            % Bidder or auctioneer non-aliance
+            if side_bidder == 1 || side_auctioneer == 1 
+                limit = 0.5*potentialFuelSavings; 
+                if current_bid > limit
+                    bidders = bidders(bidders~=acNr2); 
+                else
+                    new_bid = min([limit ...
+                        current_bid+0.1*(limit-current_bid)]);
+                    increase = new_bid - current_bid;
+                    current_bid = new_bid;
+                    highest_bidder = acNr2;
+                end 
+            else %both alliance
+                current_bid = potentialFuelSavings;
+                highest_bidder = acNr2;
+                increase = 1;
+            end     
         end  
     end     
 end     
