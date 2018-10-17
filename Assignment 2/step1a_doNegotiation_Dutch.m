@@ -57,15 +57,28 @@ while strcmp(accepted_bid,'false')
                 % Can acNr2 take the bid?
                 if 0 < potentialFuelSavings && ...
                         potentialFuelSavings >= current_bid
-                    % TODO: Does acNr2 want to take it?
-                    fuelSavingsOffer = potentialFuelSavings* ...
-                        flightsData(acNr1,19)/ ...
-                        (flightsData(acNr1,19) + flightsData(acNr2,19));
-                    divisionFutureSavings = flightsData(acNr1,19)/ ...
-                        (flightsData(acNr1,19) + flightsData(acNr2,19));
-                    % Update properties to accept the formation 
-                    step1c_updateProperties
-                    accepted_bid = 'true'; 
+                    % Determine limit under which will accept
+                    % If auctioneer or bidder non-alliance 50/50
+                    % If both alliance 100%
+                    side_auctioneer = determineAlliance(flightsData,...
+                        nAircraft, acNr1);
+                    side_bidder = determineAlliance(flightsData, ...
+                        nAircraft, acNr2);
+                    if side_auctioneer == 1 || side_bidder == 1
+                        limit = 0.5*potentialFuelSavings; 
+                    else
+                        limit = potentialFuelSavings; 
+                    end 
+                    
+                    % Check if bidder wants to take the bid 
+                    if current_bid <= limit
+                        fuelSavingsOffer = current_bid;
+                        divisionFutureSavings = flightsData(acNr1,19)/ ...
+                            (flightsData(acNr1,19) + flightsData(acNr2,19));
+                        % Update properties to accept the formation 
+                        step1c_updateProperties
+                        accepted_bid = 'true'; 
+                    end 
                 end 
             end 
         end
