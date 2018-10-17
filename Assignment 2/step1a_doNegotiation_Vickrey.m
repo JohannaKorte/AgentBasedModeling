@@ -32,9 +32,6 @@
 % step1c_updateProperties.m.
 % _________________________________________________________________________
 
-%TODO: SOLVE WEIRD VISUALIZATION 
-
-
 % Find the agent that can communicate with most others and choose it as a
 % auctioneer
 most_connected_agents_index = find(communicationCandidates(:,end));
@@ -45,16 +42,23 @@ bidders = communicationCandidates(most_connected_agents_index(1), 2:end);
 highest_bid = 0; 
 second_bid = 0;
 highest_bidder = 0;
+margin = 1.05; %increase bid using because the 2nd highest bid is paid
 
-%Loop over bidders
+% Loop over bidders
 for acNr2 = bidders
     if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
-        %Calculate possible savings
+        % Calculate possible savings
         step1b_routingSynchronizationFuelSavings
-        %TODO: Determine bid 
-        bid = potentialFuelSavings;
-        %Update highest bid & second highest bid 
-        %TODO: What to do when second bid is still 0?
+        % Determine bid 
+        side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+        side_bidder = determineAlliance(flightsData, nAircraft, acNr2);
+        if side_bidder == 1 || side_auctioneer == 1
+            bid = min([margin*0.5*potentialFuelSavings ...
+                potentialFuelSavings]);
+        else 
+            bid = potentialFuelSavings; 
+        end 
+        % Update highest bid & second highest bid 
         if bid > 0 && bid > highest_bid
             second_bid = highest_bid;
             highest_bid = bid; 
@@ -64,6 +68,7 @@ for acNr2 = bidders
 end 
 
 if highest_bid > 0 
+    %TODO: What to do when second bid is still 0?
     % Adjust bid to second highest bid
     acNr2 = highest_bidder; 
     step1b_routingSynchronizationFuelSavings
