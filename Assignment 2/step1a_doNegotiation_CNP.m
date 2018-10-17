@@ -45,7 +45,7 @@
 %%
 %% Loop through the combinations of flights that are allowed to communicate.
 % Determine the manager, it is the agent that is in contact with the most
-% other agents.
+% other agents. If there is an equality, choose the first one.
 communication_amount = zeros(length(communicationCandidates(:,1)),1);
 for i = 1:length(communicationCandidates(:,1))  
     % Determine the amount of nonzero elements per communucationCandid.
@@ -54,17 +54,22 @@ end
 [nCandidates, acnummer] = max(communication_amount);
 
 % Store flight ID of Manager
-acNr1 = communicationCandidates(acnummer,1);   
+acNr1 = communicationCandidates(acnummer,1);
+% Store agent type of manager
+acNr1_type = flightsData(acNr1,25);
 
 % Store all the bidding in 'biddings'
 % biddings(j,1) = acNr2
-% biddings(j,2) = potentialFuelsavings*division
-biddings = zeros(nCandidates,2);
+% biddings(j,2) = 2 (=alliance) or 1 (= Non-alliance) 
+%                (see currentProperty(:,25))
+% biddings(j,3) = division
+% biddings(j,4) = potentialFuelsavings*division
+biddings = zeros(nCandidates,4);
 
 % Loop over all candidates of flight i.
-for j = 2:nCandidates+1
+for j = 1:nCandidates
     % Store flight ID of candidate flight j in variable.
-    acNr2 = communicationCandidates(acnummer,j); 
+    acNr2 = communicationCandidates(acnummer,j+1); 
         
     % Check whether the flights are still available for communication.
     if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1             
@@ -75,30 +80,43 @@ for j = 2:nCandidates+1
         % If the involved flights can reduce their cumulative fuel burn
         % the formation route is stored.
         if potentialFuelSavings > 0    
-            % TODO: For now divide 50-50,
-            % TODO: STRATEGY! 
-            % but should depend on the contractor.
-            division = flightsData(acNr1,19)/ ...
-                (flightsData(acNr1,19) + flightsData(acNr2,19));
-            % store a ll the bids
+            % store acnumber and if alliance or not
             biddings(j,1) = acNr2;
-            biddings(j,2) = potentialFuelSavings*division; 
+            biddings(j,2) = flightsData(acNr2,25);
+            % Division depends on contractor
+            % If manager and contractor are from the alliance,
+            % then contractor gives the full 100%.
+            % else, bid 50%
+            if biddings(j,2)==2 && acNr1_type==2
+                biddings(j,3) = flightsData(acNr1,19);
+            else
+                biddings(j,3) = flightsData(acNr1,19)/ ...
+                (flightsData(acNr1,19) + flightsData(acNr2,19));
+            end
+            % store all the bids
+            biddings(j,4) = potentialFuelSavings*biddings(j,3); 
         end
     end
 end
-
+% Store biddings in a table for readability
+biddings_table = array2table(biddings,...
+    'VariableNames',{'FlightID','Type','Division','Bid'});
 %check if there are any biddings
-if nnz(biddings) ~= 0
+if nnz(biddings(:,4)) ~= 0
+    % An alliance manager considers the bidding of an alliance contractor
+    % twice as important as a bidding of a non-alliance contractor.
+    for j = 1:nCandidates
+        if biddings(j,2)==2 && acNr1_type==2
+            biddings(j,4) = biddings(j,4)*2;
+        end
+    end
     % Chose the winning contractor
-    [fuelSavingsOffer, row_number] = max(biddings(:,2)); 
+    [fuelSavingsOffer, row_number] = max(biddings(:,4)); 
     acNr2 = biddings(row_number,1); 
     step1b_routingSynchronizationFuelSavings
-    division = flightsData(acNr1,19)/ ...
-                    (flightsData(acNr1,19) + flightsData(acNr2,19));
     % In the CNP the value of divisionFutureSavings is decided upon by the 
     % contractor agent.
-    % TODO: STRATEGY! 
-    divisionFutureSavings = division;
+    divisionFutureSavings = biddings(row_number,3);
 
     % Update the relevant flight properties for the formation
     % that is accepted.
