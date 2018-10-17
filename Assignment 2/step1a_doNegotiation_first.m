@@ -31,8 +31,6 @@
 % (determineRoutingAndSynchronization.m, calculateFuelSavings.m) and
 % step1c_updateProperties.m.
 
-%TODO: SOLVE WEIRD VISUALIZATION 
-
 
 % Find the agent that can communicate with most others and choose it as a
 % auctioneer
@@ -49,8 +47,14 @@ for acNr2 = bidders
     if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
         %Calculate possible savings
         step1b_routingSynchronizationFuelSavings
-        %TODO: Determine bid 
-        bid = potentialFuelSavings;
+        %Determine bid 
+        side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+        side_bidder = determineAlliance(flightsData, nAircraft, acNr2);
+        if side_bidder == 1 || side_auctioneer == 1
+            bid = min([0.5*potentialFuelSavings potentialFuelSavings]);
+        else 
+            bid = potentialFuelSavings; 
+        end 
         %Update highest bid
         if bid > 0 && bid > highest_bid
             highest_bid = bid; 
