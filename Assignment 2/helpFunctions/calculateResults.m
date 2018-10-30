@@ -1,5 +1,6 @@
-function [fuelSavingsTotalPct,fuelSavingsAlliancePct, ...
-    fuelSavingsNonAlliancePct,extraDistancePct,extraFlightTimePct] = ...
+ function [fuelSavingsTotalPct,fuelSavingsAlliancePct, ...
+    fuelSavingsNonAlliancePct,extraDistancePct,extraFlightTimePct, ...
+    averageFormationSize, averageFormationNumbers] = ...
     calculateResults(nAircraft,flightsDataRecordings,Wfinal,Vmax, ...
     fuelSavingsTotal)
 %% calculateResults.m description
@@ -40,6 +41,7 @@ function [fuelSavingsTotalPct,fuelSavingsAlliancePct, ...
 
 % Abbreviate flightsDataRecordings for shorter code.
 FDR = flightsDataRecordings;
+[runtimes, ~, ~] = size(FDR);
 
 % Determine the solo route distances.
 soloRouteDistances = [1:nAircraft ; sqrt((FDR(1,1:nAircraft,5)- ...
@@ -165,6 +167,59 @@ for i = nTotal:-1:1
     end
 end
 
+%% Calculate the average amount and size of formations at every time t
+%InFormation makes a formation matrix, to see which aircraft are in which
+%formation. Furthermore the average amount and size of formations can be 
+% determined.  
+form_amount = zeros(runtimes,1);
+form_size = zeros(runtimes,1);
+leaders = [];
+for r = 1:runtimes
+    % find all non-zero elements, this is the ac this ac is following
+    % row is the ac and v is the flight iD of the leading aircraft
+    [~, ID , v] = find(FDR(r,:,22));
+    formationAircraft = [ID' v'];
+    % Making sure that you do not run it if only dummy aircraft are left
+    if isempty(find(formationAircraft<nAircraft+1,1))~= 1
+    % If there are formations formed, then calculate sizen and amount
+    if isempty(formationAircraft) ~= 1
+        % Location of the following dummy
+        followDummyLoc = find(formationAircraft(:,1)>nAircraft);
+        for i = 1:length(followDummyLoc)
+            % flight ID of the following dummy and the leading dummy
+            followDummy = formationAircraft(followDummyLoc(i),1);
+            % flight ID of the leading dummy
+            leadingDummy = formationAircraft(followDummyLoc(i),2);
+            % Location(s) where follow dummy is leading dummy
+            replaceTheDummy = find(formationAircraft(:,2)==followDummy);
+            % replace them by the actual leading dummy
+            formationAircraft(replaceTheDummy,2) = leadingDummy;
+        end
+        % remove the dummy following dummy row
+        formationAircraft(followDummyLoc,:) = [];
+
+        % check which aircraft are leading aircraft
+        leaders = unique(formationAircraft(:,2));
+
+        % check the maximum size of the formations
+        [~, F] = mode(formationAircraft(:,2));
+
+        % make a matrix with first value is flight ID of leading aircraft 
+        % the next values are the ID's of the following aircraft.
+        formations = zeros(length(leaders), F+1);
+        F_size = zeros(length(leaders),1);
+        for j = 1:length(leaders)
+            followerLoc = find(formationAircraft(:,2)==leaders(j));
+            F_size(j) = length(followerLoc);
+            formations(j,1:(F_size(j)+1)) = [leaders(j) formationAircraft(followerLoc,1).'];
+        end
+        % Output
+        form_amount(r,1) = nnz(formations(:,1));
+        form_size(r,1) = sum(F_size)./length(leaders);      
+    end
+    end    
+end
+
 %% Calulate results.
 
 % Percentual change in total distance, comparing the actual total distance
@@ -191,4 +246,10 @@ fuelSavingsAlliancePct = sum(fuelSavingsPerFlight(FDR(end,1:nAircraft,25)==2))/ 
 % flights.
 fuelSavingsNonAlliancePct = sum(fuelSavingsPerFlight(FDR(end,1:nAircraft,25)==1))/ ...
     fuelSavingsTotal*100;
+
+% Average size of formations per tick per run
+averageFormationSize = mean(form_size); % [-]
+
+% Average amount of formations per tick per run
+averageFormationNumbers = mean(form_amount); % [-]
 end

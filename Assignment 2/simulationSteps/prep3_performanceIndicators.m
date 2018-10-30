@@ -27,4 +27,13 @@ extraDistancePctPerRun = zeros(nSimulations,1); % [%]
 
 % Percentual change in total flight, comparing the actual flight time to
 % the total flight time of only solo flights were flown.
-extraFlightTimePctPerRun = zeros(nSimulations,1); % [%] 
+extraFlightTimePctPerRun = zeros(nSimulations,1); % [%]  
+
+% Average size of formations per tick per run
+averageFormationSizePerRun = zeros(nSimulations,1); % [-]
+
+% Average amount of formations per tick per run
+averageFormationNumbersPerRun = zeros(nSimulations,1); % [-]
+
+% Average amount of formations per tick per run
+% = zeros(nSimulations,1); % [-]

@@ -56,9 +56,9 @@ end
 % Store flight ID of Manager
 acNr1 = communicationCandidates(acnummer,1);
 % Store agent type of manager
-acNr1_type = determineAlliance(flightsData, nAircraft, acNr1);
+acNr1_type = flightsData(acNr1,25);
 
-% Store all the bidding in 'biddings'
+% Store all the bids in 'biddings'
 % biddings(j,1) = acNr2
 % biddings(j,2) = 2 (=alliance) or 1 (= Non-alliance) 
 %                (see currentProperty(:,25))
@@ -82,10 +82,9 @@ for j = 1:nCandidates
         if potentialFuelSavings > 0    
             % store acnumber and if alliance or not
             biddings(j,1) = acNr2;
-            biddings(j,2) = determineAlliance(flightsData, nAircraft,...
-                acNr2);
+            biddings(j,2) = flightsData(acNr2,25);
             % Division depends on contractor
-            % If manager and contractor are from the alliance,
+            % If manager and contractor are from the alliance (=2),
             % then contractor gives the full 100%.
             % else, bid 50%
             if biddings(j,2)==2 && acNr1_type==2
@@ -112,16 +111,17 @@ if nnz(biddings(:,4)) ~= 0
         end
     end
     % Chose the winning contractor
-    [fuelSavingsOffer, row_number] = max(biddings(:,4)); 
+    [fuelSavingsOffer, row_number] = max(biddings(:,4));
+    % If the manager and winning contractor are both alliance, set the
+    % fuelSavingsOffer back to the real offer and not the considered one.
+    if biddings(row_number,2) == 2 && acNr1_type == 2
+        fuelSavingsOffer = fuelSavingsOffer/2;
+    end
     acNr2 = biddings(row_number,1); 
     step1b_routingSynchronizationFuelSavings
     % In the CNP the value of divisionFutureSavings is decided upon by the 
     % contractor agent.
-    if biddings(row_number,2)== 2
-       fuelSavingsOffer = biddings(j,4)/2; 
-    end
-    divisionFutureSavings = flightsData(acNr1,19)/ ...
-        (flightsData(acNr1,19) + flightsData(acNr2,19));
+    divisionFutureSavings = biddings(row_number,3);
 
     % Update the relevant flight properties for the formation
     % that is accepted.
