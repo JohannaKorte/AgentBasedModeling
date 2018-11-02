@@ -38,5 +38,10 @@ averageFormationNumbersPerRun = zeros(nSimulations,1); % [-]
 % Percentage of same type (alliance/non-alliance) aircraft formations per run
 sameTypePctPerRun = zeros(nSimulations,1); % [%]
 
-% Percentage of alliance aircraft in formations per run
-allianceInFormationsPctPerRun = zeros(nSimulations,1); % [%]
+% Percentage of the alliance aircraft that make up all aircraft in
+% formations Per run
+allianceInFormationsPctPerRun_form = zeros(nSimulations,1); % [%]
+
+% Percentage of alliance aircraft in formations (wrt all alliance aircraft)
+% Per run
+allianceInFormationsPctPerRun_all = zeros(nSimulations,1); % [%]

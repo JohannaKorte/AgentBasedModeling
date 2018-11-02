@@ -208,8 +208,8 @@ for r = 1:runtimes
         % remove the dummy following dummy row
         formationAircraft(followDummyLoc,:) = [];
         
-        % put 1 or 2 in the list with the flight ID as order
-        % (1 = non-alliance, 2 = alliance, 0 is not in a formation)
+        % put 1 or 2 in the list a (1 = non-alliance, 2 = alliance, 0 is not
+        % in a formation)
         form_alliance(formationAircraft(:,1)) = FDR(1,formationAircraft(:,1),25);
         
         % check which aircraft are leading aircraft
@@ -249,6 +249,7 @@ for r = 1:runtimes
 %end
     end    
 end
+form_alliance
 
 
 %% Calulate results.

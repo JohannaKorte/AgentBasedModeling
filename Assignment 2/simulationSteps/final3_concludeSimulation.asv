@@ -50,14 +50,6 @@ averageFormationNumbersPerRun(simrun) = averageFormationNumbers; % [-]
 
 % Percentage of same type (alliance/non-alliance) aircraft formations per run
 sameTypePctPerRun(simrun) = sameTypePct; % [%]
-
-% Percentage of the alliance aircraft that make up all aircraft in
-% formations Per run
-allianceInFormationsPctPerRun_form(simrun) = allianceInFormationsPct_form; % [%]
-
-% Percentage of alliance aircraft in formations (wrt all alliance aircraft)
-% Per run
-allianceInFormationsPctPerRun_all(simrun) = allianceInFormationsPct_all; % [%]
 %% Clear some variables.
 
 clearvars a acNr1 acNr2 c communicationCandidates divisionFutureSavings ...
@@ -70,5 +62,4 @@ clearvars a acNr1 acNr2 c communicationCandidates divisionFutureSavings ...
     wAC wBD wDuo Xjoining Xordes Xsplitting Yjoining Yordes Ysplitting ...
     extraDistancePct extraFlightTimePct fuelSavingsAlliancePct ...
     fuelSavingsNonAlliancePct fuelSavingsTotal fuelSavingsTotalPct ...
-    averageFormationSize averageFormationNumbers sameTypePct ...
-    allianceInFormationsPct_form allianceInFormationsPct_all
+    averageFormationSize averageFormationNumbers sameTypePct
