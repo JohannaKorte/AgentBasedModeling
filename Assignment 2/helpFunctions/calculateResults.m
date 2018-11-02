@@ -1,6 +1,6 @@
  function [fuelSavingsTotalPct,fuelSavingsAlliancePct, ...
     fuelSavingsNonAlliancePct,extraDistancePct,extraFlightTimePct, ...
-    averageFormationSize, averageFormationNumbers] = ...
+    averageFormationSize, averageFormationNumbers, sameTypePct] = ...
     calculateResults(nAircraft,flightsDataRecordings,Wfinal,Vmax, ...
     fuelSavingsTotal)
 %% calculateResults.m description
@@ -33,6 +33,9 @@
 % extraFlightTimePct (percentual change in total flight, comparing the
 % actual flight time to the total flight time of only solo flights were
 % flown).
+
+% added outputs
+%
 
 % special cases: 
 % -
@@ -168,12 +171,13 @@ for i = nTotal:-1:1
 end
 
 %% Calculate the average amount and size of formations at every time t
+%% as well as the percentage of same type formations
 %InFormation makes a formation matrix, to see which aircraft are in which
 %formation. Furthermore the average amount and size of formations can be 
 % determined.  
 form_amount = zeros(runtimes,1);
 form_size = zeros(runtimes,1);
-leaders = [];
+sameType = [];
 for r = 1:runtimes
     % find all non-zero elements, this is the ac this ac is following
     % row is the ac and v is the flight iD of the leading aircraft
@@ -181,8 +185,9 @@ for r = 1:runtimes
     formationAircraft = [ID' v'];
     % Making sure that you do not run it if only dummy aircraft are left
     if isempty(find(formationAircraft<nAircraft+1,1))~= 1
-    % If there are formations formed, then calculate sizen and amount
+    % If there are formations formed, then calculate size and amount
     if isempty(formationAircraft) ~= 1
+        %
         % Location of the following dummy
         followDummyLoc = find(formationAircraft(:,1)>nAircraft);
         for i = 1:length(followDummyLoc)
@@ -212,13 +217,27 @@ for r = 1:runtimes
             followerLoc = find(formationAircraft(:,2)==leaders(j));
             F_size(j) = length(followerLoc);
             formations(j,1:(F_size(j)+1)) = [leaders(j) formationAircraft(followerLoc,1).'];
+            % If the leader is not a member of the list yet, add to
+            % sameType or not Same type
+            if isempty(sameType) == 1 || ismember(leaders(j), sameType(:,1)) ~= 1
+                % SAMETYPE %
+                % if all member of the formation are of the same type
+                % give value 1, if not, give value 0
+                if range(FDR(r,formations(j,2:1+F_size(j)),25))==0                    
+                    sameType = [sameType; leaders(j) 1];
+                else
+                    sameType = [sameType; leaders(j) 0];  
+                end    
+             end  
         end
-        % Output
+        
+        % Used for output
         form_amount(r,1) = nnz(formations(:,1));
-        form_size(r,1) = sum(F_size)./length(leaders);      
+        form_size(r,1) = sum(F_size)./length(leaders);
     end
     end    
 end
+
 
 %% Calulate results.
 
@@ -247,9 +266,12 @@ fuelSavingsAlliancePct = sum(fuelSavingsPerFlight(FDR(end,1:nAircraft,25)==2))/ 
 fuelSavingsNonAlliancePct = sum(fuelSavingsPerFlight(FDR(end,1:nAircraft,25)==1))/ ...
     fuelSavingsTotal*100;
 
-% Average size of formations per tick per run
+% Average size of formations per tick 
 averageFormationSize = mean(form_size); % [-]
 
-% Average amount of formations per tick per run
+% Average amount of formations per tick
 averageFormationNumbers = mean(form_amount); % [-]
+
+% Percentage of same type aircraft formations
+sameTypePct = mean(sameType(:,2))*100; % [%]
 end

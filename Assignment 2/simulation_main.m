@@ -1,4 +1,4 @@
-%% simulation_main.m description
+  %% simulation_main.m description
 % This file should be run to simulate flight operations. The code is split
 % up in ten main files: prep1_setParameters.m, prep2_loadFixedParameters.m,
 % prep3_performanceIndicators.m, prep4_loadFlightSchedule.m,

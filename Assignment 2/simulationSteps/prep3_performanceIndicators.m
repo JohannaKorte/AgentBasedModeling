@@ -35,5 +35,8 @@ averageFormationSizePerRun = zeros(nSimulations,1); % [-]
 % Average amount of formations per tick per run
 averageFormationNumbersPerRun = zeros(nSimulations,1); % [-]
 
-% Average amount of formations per tick per run
-% = zeros(nSimulations,1); % [-]
+% Percentage of same type (alliance/non-alliance) aircraft formations per run
+sameTypePctPerRun = zeros(nSimulations,1); % [%]
+
+% Percentage of alliance aircraft in formations per run
+allianceInFormationsPctPerRun = zeros(nSimulations,1); % [%]
