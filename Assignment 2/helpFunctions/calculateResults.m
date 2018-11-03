@@ -1,7 +1,8 @@
  function [fuelSavingsTotalPct,fuelSavingsAlliancePct, ...
     fuelSavingsNonAlliancePct,extraDistancePct,extraFlightTimePct, ...
     averageFormationSize, averageFormationNumbers, sameTypePct, ...
-    allianceInFormationsPct_form, allianceInFormationsPct_all] = ...
+    allianceInFormationsPct_form, allianceInFormationsPct_all...
+    divisionOfferManagerAverage] = ...
     calculateResults(nAircraft,flightsDataRecordings,Wfinal,Vmax, ...
     fuelSavingsTotal,percentageAlliance)
 %% calculateResults.m description
@@ -246,11 +247,12 @@ for r = 1:runtimes
         % Used for output
         form_amount(r,1) = nnz(formations(:,1));
         form_size(r,1) = sum(F_size)./length(leaders);
-%end
+        %end
     end    
 end
 
-
+% All offers (in percentage) to the manager, that the manager has chosen.
+divisions = FDR(end,:,29);
 %% Calulate results.
 
 % Percentual change in total distance, comparing the actual total distance
@@ -294,4 +296,8 @@ allianceInFormationsPct_form = numel(find(form_alliance==2))/nnz(form_alliance).
 % Percentage of alliance aircraft in formations (wrt all alliance aircraft)
 allianceInFormationsPct_all = numel(find(form_alliance==2))/(nAircraft*(percentageAlliance/100))...
     *100; % [%]
+
+% Average accepted offer from a manager (so how much does the manager get
+% on average).
+divisionOfferManagerAverage = sum(divisions)/nnz(divisions); % [-]
 end

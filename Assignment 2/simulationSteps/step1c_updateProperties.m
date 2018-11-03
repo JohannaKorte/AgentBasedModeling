@@ -29,6 +29,8 @@ flightsData(acNr2,27) = potentialFuelSavings - fuelSavingsOffer;
 % between acNr1 and acNr2.
 flightsData(acNr1,28) = divisionFutureSavings;
 flightsData(acNr2,28) = 1 - divisionFutureSavings;
+% Store the offers to the managers
+flightsData(acNr1,29) = divisionFutureSavings;
 
 % Adopt the joining- and splitting point in the flight plans of both
 % flights in the flightsData matrix.

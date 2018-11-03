@@ -122,6 +122,7 @@ if nnz(biddings(:,4)) ~= 0
     % In the CNP the value of divisionFutureSavings is decided upon by the 
     % contractor agent.
     divisionFutureSavings = biddings(row_number,3);
+    flightsData(acNr1,29) = divisionFutureSavings;
 
     % Update the relevant flight properties for the formation
     % that is accepted.

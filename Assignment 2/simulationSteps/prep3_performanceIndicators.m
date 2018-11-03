@@ -45,3 +45,7 @@ allianceInFormationsPctPerRun_form = zeros(nSimulations,1); % [%]
 % Percentage of alliance aircraft in formations (wrt all alliance aircraft)
 % Per run
 allianceInFormationsPctPerRun_all = zeros(nSimulations,1); % [%]
+
+% Average accepted offer from a manager (so how much does the manager get
+% on average) per run.
+divisionOfferManagerAveragePerRun = zeros(nSimulations,1); % [-]

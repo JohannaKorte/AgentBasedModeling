@@ -119,8 +119,7 @@ destinationAirports = [destinationAirportsX destinationAirportsY];
 
 % Predefine for performance. 2*nAircraft additional rows are created as
 % dummy flights. These dummy flights act as formation navigators.
-flightsInitialData = zeros(3*nAircraft,29); 
-
+flightsInitialData = zeros(3*nAircraft,28); 
 
 %% Generate the initial properties for all flights. 
 % Each row indicates the properties for one flight.

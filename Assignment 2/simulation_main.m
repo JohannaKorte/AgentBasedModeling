@@ -90,7 +90,7 @@ prep3_performanceIndicators;
 %% Create all flight schedules.
 
 % Predefine a 3D matrix to store the flight schedules of the nSimulations. 
-flightsInitialSchedule = zeros(nSimulations,3*nAircraft,28);
+flightsInitialSchedule = zeros(nSimulations,3*nAircraft,29);
 
 for simrunSchedule = 1:nSimulations
     % Generate the initial properties for each real flight and create all
@@ -146,7 +146,7 @@ for simrun = 1:nSimulations
         % Store the data in time step t of the flight recorders.
         flightsDataRecordings(t,:,:) = flightsData;                                    
         flightsDataReal(t,:,:) = flightsData(1:nAircraft,:); 
-        
+
         % Visualize the flights. 
         if visualizationOption == 1
             final2_visualizeFlights;
