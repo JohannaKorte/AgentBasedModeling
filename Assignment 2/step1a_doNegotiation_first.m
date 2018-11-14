@@ -57,7 +57,7 @@ if communication == 1  % Communication between alliance flights
             side_bidder = determineAlliance(flightsData, nAircraft, acNr2);
             
             % Determine the knowledge obtained by communication 
-            if side_auctioneer == 1
+            if side_auctioneer == 1 && side_bidder == 2
                 % only knowledge of agents in my communication range
                 % because auctioneer is not alliance
                 nearbyAgents = communicationCandidates(...
@@ -70,7 +70,7 @@ if communication == 1  % Communication between alliance flights
                         end 
                     end 
                 end 
-            elseif side_auctioneer == 2
+            elseif side_auctioneer == 2 && side_bidder == 2
                 % auctioneer and bidder are alliance
                 knowledge = allKnowledge;
             end
