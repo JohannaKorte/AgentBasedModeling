@@ -45,34 +45,94 @@ bidders = communicationCandidates(most_connected_agents_index(1), 2:end);
 % Start with current_bid of 0, and increase it. When the personal limit is
 % reached for a bidder, it exits the auction. The last bidder left takes
 % the bid. 
-% Bid = kg of fuel that the auctioneer will receive  
 
-% TODO: Start bid higher than 1? otherwise when there is only one bidder 
-% from the start, he or she will take the bid and the auctioneer gets 0.
-current_bid = 0; 
+current_bid = 1; 
 
-while length(bidders) > 1
-    %loop over bidders to see if anyone wants to exit
-    for acNr2 = bidders
-        step1b_routingSynchronizationFuelSavings
-        % If bidder cannot stay, remove from bidders list 
-        if potentialFuelSavings <= 0 || potentialFuelSavings < current_bid
-            bidders = bidders(bidders~=acNr2); 
-            break
-        end 
-        % If bidder does not want to stay, remove from bidders list
-        side_auctioneer = determineAlliance(flightsData,...
-                        nAircraft, acNr1);
-        side_bidder = determineAlliance(flightsData, ...
-                        nAircraft, acNr2);
-        if side_auctioneer == 1 || side_bidder == 1
-           if 0.5*potentialFuelSavings < current_bid
+if communication == 1  %communication/coordination allowed 
+    allKnowledge = communicateAllianceAuction(flightsData, bidders, ...
+        auctioneer, nAircraft, wMulti, wTrail, Vmin, Vmax, dt, ...
+        fuelPenalty, t, flightsDataRecordings, MFuelSolo, MFuelTrail);
+    side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+
+    while length(bidders) > 1
+        %loop over bidders to see if anyone wants to exit
+        for acNr2 = bidders
+            knowledge = [];
+            step1b_routingSynchronizationFuelSavings
+            side_bidder = determineAlliance(flightsData,nAircraft, acNr2);
+            % Determine knowledge 
+            if side_auctioneer == 1 && side_bidder == 2
+                % only knowledge of agents in my communication range
+                % because auctioneer is not alliance
+                nearbyAgents = communicationCandidates(...
+                    communicationCandidates(:,1)==acNr2, 2:end);
+                for b=nearbyAgents
+                    if ~isempty(allKnowledge)
+                        pfs = allKnowledge(allKnowledge(:,1)==b, :); 
+                        if ~isempty(pfs)
+                            knowledge = [knowledge; b pfs]; 
+                        end 
+                    end 
+                end 
+            elseif side_auctioneer == 2 && side_bidder == 2
+                % auctioneer and bidder are alliance
+                knowledge = allKnowledge;
+            end
+            
+            % If bidder cannot stay, remove from bidders list 
+            if potentialFuelSavings <= 0 || potentialFuelSavings < current_bid
                 bidders = bidders(bidders~=acNr2); 
                 break
-           end 
-        end           
-    end 
-    current_bid = current_bid + increaseBid;
+            end 
+
+            % If bidder does not want to stay, remove from bidders list
+            if side_bidder == 1
+                % bidder is non-alliance
+                if 0.5*potentialFuelSavings < current_bid
+                    bidders = bidders(bidders~=acNr2); 
+                    break
+                end 
+            elseif side_auctioneer == 1
+                % bidder is alliance, but auctioneer is not
+                if 0.5*potentialFuelSavings < current_bid
+                    bidders = bidders(bidders~=acNr2); 
+                    break
+                end 
+            else 
+                % bidder and auctioneer alliance
+                if ~isempty(knowledge) && max(knowledge(:,2) > ...
+                        potentialFuelSavings)
+                    bidders = bidders(bidders~=acNr2); 
+                    break
+                end 
+            end  
+        end 
+        current_bid = current_bid + increaseBid;
+    end
+else  % No communication/coordination allowed between alliance flights 
+    while length(bidders) > 1
+        %loop over bidders to see if anyone wants to exit
+        for acNr2 = bidders
+            step1b_routingSynchronizationFuelSavings
+            % If bidder cannot stay, remove from bidders list 
+            if potentialFuelSavings <= 0 || potentialFuelSavings < current_bid
+                bidders = bidders(bidders~=acNr2); 
+                break
+            end 
+            % If bidder does not want to stay, remove from bidders list
+            side_auctioneer = determineAlliance(flightsData,...
+                            nAircraft, acNr1);
+            side_bidder = determineAlliance(flightsData, ...
+                            nAircraft, acNr2);
+            if side_auctioneer == 1 || side_bidder == 1
+               if 0.5*potentialFuelSavings < current_bid
+                    bidders = bidders(bidders~=acNr2); 
+                    break
+               end 
+            end           
+        end 
+        current_bid = current_bid + increaseBid;
+    end
 end
 
 if length(bidders) == 1 && current_bid ~=0

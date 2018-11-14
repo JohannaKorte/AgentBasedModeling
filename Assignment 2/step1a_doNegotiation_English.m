@@ -44,7 +44,6 @@ current_bid = 0;
 increase = 1;
 
 if communication == 1 % Communication between alliance flights allowed
-    % Determine total knowledge 
     side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
     last_alliance_bid = 0; 
     while increase ~= 0 && length(bidders) > 1
