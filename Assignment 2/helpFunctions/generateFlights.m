@@ -155,6 +155,7 @@ for i = 1:nAircraft
     flightsInitialData(i,20) = 0;
     flightsInitialData(i,21) = 1; 
     flightsInitialData(i,22) = 0;
+    flightsInitialData(i,29) = 0;
 end
 
 %% Determine the starting weight of all real flights. 
