@@ -42,7 +42,7 @@
 % row_number : is the row number of the highest bid in biddings
 
 %% Loop through the combinations of flights that are allowed to communicate.
-if coordination == 1
+if communication == 1
     % Determine the manager, it is the agent that is in contact with the most
     % other agents. If there is an equality, choose the first one.
     % Unless there is coordination and the previous manager choose the next
