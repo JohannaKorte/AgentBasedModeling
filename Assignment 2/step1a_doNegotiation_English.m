@@ -39,45 +39,108 @@ most_connected_agents_index = find(communicationCandidates(:,end));
 auctioneer = communicationCandidates(most_connected_agents_index(1),1);
 acNr1 = auctioneer; 
 bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
-
 highest_bidder = 0; 
 current_bid = 0; 
 increase = 1;
-while increase ~= 0 && length(bidders) > 1
-    increase = 0; 
-    % Loop over active bidders
-    for acNr2 = bidders
-        step1b_routingSynchronizationFuelSavings
-        % If bidder cannot afford to bid, remove from bidders list 
-        if potentialFuelSavings <= 0 || potentialFuelSavings <= current_bid
-             bidders = bidders(bidders~=acNr2); 
-        else 
-            side_auctioneer = determineAlliance(flightsData,...
-                        nAircraft, acNr1);
-            side_bidder = determineAlliance(flightsData, ...
-                        nAircraft, acNr2);
-            % Determine whether the bidder will increase bid
-            % Bidder or auctioneer non-aliance
-            if side_bidder == 1 || side_auctioneer == 1 
-                limit = 0.5*potentialFuelSavings; 
-                if current_bid > limit
-                    bidders = bidders(bidders~=acNr2); 
-                else
-                    new_bid = min([limit ...
-                        current_bid+0.1*(limit-current_bid)]);
-                    increase = new_bid - current_bid;
-                    current_bid = new_bid;
-                    highest_bidder = acNr2;
-                end 
-            else %both alliance
-                current_bid = potentialFuelSavings;
-                highest_bidder = acNr2;
-                increase = 1;
-            end     
-        end  
-    end     
-end     
 
+if communication == 1 % Communication between alliance flights allowed
+    % Determine total knowledge 
+    side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+    last_alliance_bid = 0; 
+    while increase ~= 0 && length(bidders) > 1
+        increase = 0; 
+        % Loop over active bidders
+        for acNr2 = bidders
+            side_bidder = determineAlliance(flightsData, ...
+                            nAircraft, acNr2);
+            step1b_routingSynchronizationFuelSavings
+
+            % If bidder cannot afford to bid, remove from bidders list 
+            if potentialFuelSavings <= 0 || potentialFuelSavings <= ...
+                    current_bid
+                 bidders = bidders(bidders~=acNr2); 
+            else 
+                
+                % Determine bid 
+                if side_bidder == 1 
+                    % Bidder is non-alliance 
+                    limit = 0.5*potentialFuelSavings; 
+                    if current_bid > limit
+                        bidders = bidders(bidders~=acNr2); 
+                    else
+                        new_bid = min([limit ...
+                            current_bid+0.1*(limit-current_bid)]);
+                        increase = new_bid - current_bid;
+                        current_bid = new_bid;
+                        highest_bidder = acNr2;
+                    end 
+                elseif side_auctioneer == 1 
+                    % Bidder is alliance, but auctioneer is not 
+                    % Alliance will want to keep the price artificially low
+                    % and not increase the bid if the highest bidder is 
+                    % alliance. 
+                    limit = 0.5*potentialFuelSavings; 
+                    if current_bid > limit
+                        bidders = bidders(bidders~=acNr2); 
+                    else 
+                        % Every alliance member sends its bid to all other
+                        % members 
+                        if last_alliance_bid ~= current_bid
+                            new_bid = min(current_bid + 1, ...
+                                0.5*potentialFuelSavings);
+                            highest_bidder = acNr2; 
+                            increase = new_bid - current_bid;
+                            current_bid = new_bid; 
+                            last_alliance_bid = current_bid; 
+                        end     
+                    end
+                else %both alliance
+                    % immediately go all in
+                    new_bid = potentialFuelSavings;
+                    highest_bidder = acNr2;
+                    increase = new_bid - current_bid;
+                    current_bid = new_bid; 
+                end     
+            end  
+        end     
+    end     
+else 
+    while increase ~= 0 && length(bidders) > 1
+        increase = 0; 
+        % Loop over active bidders
+        for acNr2 = bidders
+            step1b_routingSynchronizationFuelSavings
+            % If bidder cannot afford to bid, remove from bidders list 
+            if potentialFuelSavings <= 0 || potentialFuelSavings <= current_bid
+                 bidders = bidders(bidders~=acNr2); 
+            else 
+                side_auctioneer = determineAlliance(flightsData,...
+                            nAircraft, acNr1);
+                side_bidder = determineAlliance(flightsData, ...
+                            nAircraft, acNr2);
+                % Determine whether the bidder will increase bid
+                % Bidder or auctioneer non-aliance
+                if side_bidder == 1 || side_auctioneer == 1 
+                    limit = 0.5*potentialFuelSavings; 
+                    if current_bid > limit
+                        bidders = bidders(bidders~=acNr2); 
+                    else
+                        new_bid = min([limit ...
+                            current_bid+0.1*(limit-current_bid)]);
+                        increase = new_bid - current_bid;
+                        current_bid = new_bid;
+                        highest_bidder = acNr2;
+                    end 
+                else %both alliance
+                    current_bid = potentialFuelSavings;
+                    highest_bidder = acNr2;
+                    increase = 1;
+                end     
+            end  
+        end     
+    end     
+end 
+    
 if highest_bidder ~= 0
     acNr2 = highest_bidder; 
     step1b_routingSynchronizationFuelSavings
