@@ -42,31 +42,99 @@ bidders = communicationCandidates(most_connected_agents_index(1), 2:end);
 highest_bid = 0; 
 second_bid = 0;
 highest_bidder = 0;
-margin = 1.05; %increase bid using because the 2nd highest bid is paid
+margin = 1.05; %increase bid because the 2nd highest bid is paid
 
-% Loop over bidders
-for acNr2 = bidders
-    if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
-        % Calculate possible savings
-        step1b_routingSynchronizationFuelSavings
-        % Determine bid 
-        side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
-        side_bidder = determineAlliance(flightsData, nAircraft, acNr2);
-        if side_bidder == 1 || side_auctioneer == 1
-            bid = min([margin*0.5*potentialFuelSavings ...
-                potentialFuelSavings]);
-        else 
-            bid = potentialFuelSavings; 
-        end 
-        % Update highest bid & second highest bid 
-        if bid > 0 && bid > highest_bid
-            second_bid = highest_bid;
-            highest_bid = bid; 
-            highest_bidder = acNr2;
+if communication == 1
+    % Determine whether the auctioneer is alliance, if so share all its 
+    % knowledge of maximum fuel savings with all other alliance flights
+    side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+    allKnowledge = communicateAllianceAuction(flightsData, bidders, ...
+        auctioneer, nAircraft, wMulti, wTrail, Vmin, Vmax, dt, ...
+        fuelPenalty, t, flightsDataRecordings, MFuelSolo, MFuelTrail);
+    knowledge = [];
+    
+    % Loop over bidders
+    for acNr2 = bidders
+        if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
+            % Calculate possible savings
+            step1b_routingSynchronizationFuelSavings
+            side_bidder = determineAlliance(flightsData, nAircraft, acNr2);
+            % Determine the knowledge obtained by communication 
+            if side_auctioneer == 1 && side_bidder == 2
+                % only knowledge of agents in my communication range
+                % because auctioneer is not alliance
+                nearbyAgents = communicationCandidates(...
+                    communicationCandidates(:,1)==acNr2, 2:end);
+                for b=nearbyAgents
+                    if ~isempty(allKnowledge)
+                        pfs = allKnowledge(allKnowledge(:,1)==b, :); 
+                        if ~isempty(pfs)
+                            knowledge = [knowledge; b pfs]; 
+                        end 
+                    end 
+                end 
+            elseif side_auctioneer == 2 && side_bidder == 2
+                % auctioneer and bidder are alliance
+                knowledge = allKnowledge;
+            end
+            
+            % Determine bid 
+            if side_bidder == 1 
+                % Bidder is non-alliance
+                bid = min([margin*0.5*potentialFuelSavings ...
+                    potentialFuelSavings]);
+            elseif side_auctioneer == 1
+                % Bidder is alliance, auctioneer is not
+                if size(knowledge) > 0
+                    if max(knowledge) <= potentialFuelSavings
+                        bid = min([margin*0.5*potentialFuelSavings ...
+                        potentialFuelSavings]);
+                    else 
+                        bid = 0; 
+                    end
+                else
+                    bid = min([margin*0.5*potentialFuelSavings ...
+                    potentialFuelSavings]);
+                end 
+            else 
+                % Both are alliance 
+                bid = potentialFuelSavings; 
+            end 
+            
+            % Update highest bid & second highest bid 
+            if bid > 0 && bid > highest_bid
+                second_bid = highest_bid;
+                highest_bid = bid; 
+                highest_bidder = acNr2;
+            end 
         end 
     end 
+else % no communication between alliance flights
+    for acNr2 = bidders
+        if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
+            % Calculate possible savings
+            step1b_routingSynchronizationFuelSavings
+            % Determine bid 
+            side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+            side_bidder = determineAlliance(flightsData, nAircraft, acNr2);
+            if side_bidder == 1 || side_auctioneer == 1
+                bid = min([margin*0.5*potentialFuelSavings ...
+                    potentialFuelSavings]);
+            else 
+                bid = potentialFuelSavings; 
+            end 
+            % Update highest bid & second highest bid 
+            if bid > 0 && bid > highest_bid
+                second_bid = highest_bid;
+                highest_bid = bid; 
+                highest_bidder = acNr2;
+            end 
+        end 
+    end
 end 
-
+    
+    
+    
 if highest_bid > 0 
     %TODO: What to do when second bid is still 0?
     % Adjust bid to second highest bid
