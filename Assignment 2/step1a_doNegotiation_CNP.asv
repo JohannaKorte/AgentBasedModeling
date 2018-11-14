@@ -51,7 +51,9 @@
 %% Loop through the combinations of flights that are allowed to communicate.
 %%
 %% There is coordination between alliance flights
-if coordination == 1    
+if coordination == 1
+    useOfCoordinationAdvantage = 0;
+    
     % Determine the manager, it is the agent that is in contact with the most
     % other agents. If there is an equality, choose the first one.
     % Unless the previous manager choose the next
@@ -174,11 +176,7 @@ if coordination == 1
                 % Choose the winning alternative option
                 [theBestOption, rownr_alternative] = max(betterOptions(:,3));
                 %%% MANAGER CHOOSES NEW MANAGER %%%
-                newmanager = betterOptions(rownr_alternative,1);
-                % save how many times this option is used
-                if exist('useOfCoordinationAdvantage') == 0
-                    useOfCoordinationAdvantage = 0;
-                end
+                newmanager = betterOptions(rownr_alternative,1); 
                 useOfCoordinationAdvantage = useOfCoordinationAdvantage + 1;
             else
                 % An alliance manager considers the bidding of an alliance contractor
@@ -305,7 +303,6 @@ else
         step1c_updateProperties
     end
 end
-
     
     
 

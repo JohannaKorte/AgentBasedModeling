@@ -63,6 +63,13 @@ allianceInFormationsPctPerRun_all(simrun) = allianceInFormationsPct_all; % [%]
 % Average accepted offer from a manager (so how much does the manager get
 % on average) per run.
 divisionOfferManagerAveragePerRun(simrun) = divisionOfferManagerAverage; % [-]
+
+if coordination == 1
+% The amount of times there has been made use of the coordination advantage
+% of the alliance manager.
+useOfCoordinationAdvantagePerRun(simrun) = useOfCoordinationAdvantage; % [-]
+clearvars useOfCoordinationAdvantage
+end
 %% Clear some variables.
 
 clearvars a acNr1 acNr2 c communicationCandidates divisionFutureSavings ...

@@ -49,3 +49,8 @@ allianceInFormationsPctPerRun_all = zeros(nSimulations,1); % [%]
 % Average accepted offer from a manager (so how much does the manager get
 % on average) per run.
 divisionOfferManagerAveragePerRun = zeros(nSimulations,1); % [-]
+
+% The amount of times there has been made use of the coordination advantage
+% of the alliance manager.
+useOfCoordinationAdvantagePerRun = zeros(nSimulations,1); % [-]
+
