@@ -56,8 +56,6 @@ if communication == 1  % Communication between alliance flights
             step1b_routingSynchronizationFuelSavings
             side_bidder = determineAlliance(flightsData, nAircraft, acNr2);
             
-            disp(side_bidder)
-            disp(side_auctioneer)
             % Determine the knowledge obtained by communication 
             if side_auctioneer == 1
                 % only knowledge of agents in my communication range
