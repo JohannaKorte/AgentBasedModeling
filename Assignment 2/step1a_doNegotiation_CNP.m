@@ -224,6 +224,8 @@ if coordination == 1
 
 %% There is no coordidation between alliance flights
 else
+    
+    communication_amount = zeros(length(communicationCandidates(:,1)),1);
     for i = 1:length(communicationCandidates(:,1))  
         % Determine the amount of nonzero elements per communucationCandid.
         communication_amount(i,1) = nnz(communicationCandidates(i,2:end));

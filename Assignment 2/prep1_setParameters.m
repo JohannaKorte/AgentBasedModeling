@@ -9,7 +9,10 @@
 % Number of simulation runs.
 nSimulations = 3; 
 
-% Communication on or off.
+% Coordination on or off. (for CNP)
+coordination = 1;
+
+% Communication on or off. (for autcions)
 communication = 1; 
 
 % Value of the maximum communication distance BETWEEN two aircraft [km]. 
