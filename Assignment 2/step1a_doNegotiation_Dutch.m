@@ -41,48 +41,125 @@ most_connected_agents_index = find(communicationCandidates(:,end));
 auctioneer = communicationCandidates(most_connected_agents_index(1),1);
 acNr1 = auctioneer; 
 bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
-
+side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
 % Start with a high current_bid, and decrease it until a bidder wants to 
 % take the bid
-% Bid = kg of fuel that the manager will receive  
 accepted_bid = 'false';
 current_bid = 1000; %highest fuel savings 
-while strcmp(accepted_bid,'false')
-    if current_bid >= 0 + decreaseBid %ensure feasible bid
-        current_bid = current_bid - decreaseBid;
-        for acNr2 = bidders
-            % Check if auctioneer and bidder can still communicate
-            if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
-                step1b_routingSynchronizationFuelSavings %calculate savings
-                % Can acNr2 take the bid?
-                if 0 < potentialFuelSavings && ...
-                        potentialFuelSavings >= current_bid
-                    % Determine limit under which will accept
-                    % If auctioneer or bidder non-alliance 50/50
-                    % If both alliance 100%
-                    side_auctioneer = determineAlliance(flightsData,...
-                        nAircraft, acNr1);
-                    side_bidder = determineAlliance(flightsData, ...
-                        nAircraft, acNr2);
-                    if side_auctioneer == 1 || side_bidder == 1
-                        limit = 0.5*potentialFuelSavings; 
-                    else
-                        limit = potentialFuelSavings; 
-                    end 
-                    
-                    % Check if bidder wants to take the bid 
-                    if current_bid <= limit
-                        fuelSavingsOffer = current_bid;
-                        divisionFutureSavings = flightsData(acNr1,19)/ ...
-                            (flightsData(acNr1,19) + flightsData(acNr2,19));
-                        % Update properties to accept the formation 
-                        step1c_updateProperties
-                        accepted_bid = 'true'; 
-                    end 
+
+if communication == 1 %communitcation allowed between alliance flights
+    allKnowledge = communicateAllianceAuction(flightsData, bidders, ...
+        auctioneer, nAircraft, wMulti, wTrail, Vmin, Vmax, dt, ...
+        fuelPenalty, t, flightsDataRecordings, MFuelSolo, MFuelTrail);
+    while strcmp(accepted_bid,'false')
+        if current_bid >= 0 + decreaseBid %ensure feasible bid
+            current_bid = current_bid - decreaseBid;
+            % If auctioneer is alliance, he can decrease the bid by an 
+            % amount that he seems suitable and is as close as possible
+            % to an alliance bid 
+            if side_auctioneer == 2 && ~isempty(allKnowledge)
+                difference = max(allKnowledge(:,2)) - current_bid;
+                if difference > 0
+                    decreaseBid = 0.5*difference; 
                 end 
             end 
+            
+            for acNr2 = bidders
+                knowledge = [];
+                side_bidder = determineAlliance(flightsData, ...
+                            nAircraft, acNr2);
+                % Determine the knowledge obtained by communication 
+                if side_auctioneer == 1 && side_bidder == 2
+                    % only knowledge of agents in my communication range
+                    % because auctioneer is not alliance
+                    nearbyAgents = communicationCandidates(...
+                        communicationCandidates(:,1)==acNr2, 2:end);
+                    for b=nearbyAgents
+                        if ~isempty(allKnowledge)
+                            pfs = allKnowledge(allKnowledge(:,1)==b, :); 
+                            if ~isempty(pfs)
+                                knowledge = [knowledge; b pfs]; 
+                            end 
+                        end 
+                    end 
+                elseif side_auctioneer == 2 && side_bidder == 2
+                    % auctioneer and bidder are alliance
+                    knowledge = allKnowledge;
+                end
+                
+                % Check if auctioneer and bidder can still communicate
+                if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
+                    step1b_routingSynchronizationFuelSavings %calculate savings
+                    % Can bidder take the bid?
+                    if 0 < potentialFuelSavings && ...
+                            potentialFuelSavings >= current_bid
+                        % Determine limit under which will accept
+                        % If auctioneer or bidder non-alliance 50/50
+                        % If both alliance 100%
+                        if side_bidder == 1
+                            % bidder is non-alliance
+                            limit = 0.5*potentialFuelSavings; 
+                        elseif side_auctioneer == 1
+                            % bidder is alliance, auctioneer non-alliance
+                            limit = 0.5*potentialFuelSavings; 
+                        else
+                            limit = potentialFuelSavings;
+                        end 
+
+                        % Check if bidder wants to take the bid 
+                        if current_bid <= limit
+                            fuelSavingsOffer = current_bid;
+                            divisionFutureSavings = flightsData(acNr1,19)/ ...
+                                (flightsData(acNr1,19) + flightsData(acNr2,19));
+                            % Update properties to accept the formation 
+                            step1c_updateProperties
+                            accepted_bid = 'true'; 
+                        end 
+                    end 
+                end 
+            end
+        else
+            break; 
         end
-    else
-        break; 
-    end
-end    
+    end 
+else 
+    while strcmp(accepted_bid,'false')
+        if current_bid >= 0 + decreaseBid %ensure feasible bid
+            current_bid = current_bid - decreaseBid;
+            for acNr2 = bidders
+                % Check if auctioneer and bidder can still communicate
+                if flightsData(acNr1,2) == 1 && flightsData(acNr2,2) == 1
+                    step1b_routingSynchronizationFuelSavings %calculate savings
+                    % Can acNr2 take the bid?
+                    if 0 < potentialFuelSavings && ...
+                            potentialFuelSavings >= current_bid
+                        % Determine limit under which will accept
+                        % If auctioneer or bidder non-alliance 50/50
+                        % If both alliance 100%
+                        side_auctioneer = determineAlliance(flightsData,...
+                            nAircraft, acNr1);
+                        side_bidder = determineAlliance(flightsData, ...
+                            nAircraft, acNr2);
+                        if side_auctioneer == 1 || side_bidder == 1
+                            limit = 0.5*potentialFuelSavings; 
+                        else
+                            limit = potentialFuelSavings; 
+                        end 
+
+                        % Check if bidder wants to take the bid 
+                        if current_bid <= limit
+                            fuelSavingsOffer = current_bid;
+                            divisionFutureSavings = flightsData(acNr1,19)/ ...
+                                (flightsData(acNr1,19) + flightsData(acNr2,19));
+                            % Update properties to accept the formation 
+                            step1c_updateProperties
+                            accepted_bid = 'true'; 
+                        end 
+                    end 
+                end 
+            end
+        else
+            break; 
+        end
+    end            
+end 

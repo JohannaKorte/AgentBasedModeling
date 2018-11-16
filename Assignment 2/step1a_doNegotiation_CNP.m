@@ -52,6 +52,7 @@
 %%
 %% There is coordination between alliance flights
 if coordination == 1    
+
     % Determine the manager, it is the agent that is in contact with the most
     % other agents. If there is an equality, choose the first one.
     % Unless the previous manager choose the next

@@ -12,9 +12,6 @@ nSimulations = 3;
 % Communication on or off.
 communication = 1; 
 
-% Coordination on or off.
-coordination = 1;
-
 % Value of the maximum communication distance BETWEEN two aircraft [km]. 
 communicationRange = 500;                                             
 
