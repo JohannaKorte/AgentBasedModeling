@@ -7,10 +7,10 @@
 %% Parameters.
 
 % Number of simulation runs.
-nSimulations = 3; 
+nSimulations = 50; 
 
 % Coordination on or off. (for CNP)
-coordination = 1;
+coordination = 0;
 
 % Communication on or off. (for autcions)
 communication = 1; 

@@ -95,6 +95,7 @@ if coordination == 1
     biddings = zeros(nCandidates,4);
 
     % Loop over all candidates of flight i.
+    betterOptions = [];
     for j = 1:nCandidates
         % Store flight ID of candidate flight j in variable.
         acNr2 = communicationCandidates(acnummer,j+1); 
@@ -124,8 +125,36 @@ if coordination == 1
                 end
                 % store all the bids
                 biddings(j,4) = potentialFuelSavings*biddings(j,3); 
+            end   
+        end
+        % ADDED FOR COORDINATION
+        % if j is alliance, search the other alliance he is in contact
+        % with, safe potential fuel savings, if it is higher than its original bid.
+        if acNr1_type == 2 && biddings(j,2)==2 && ismember(biddings(j,1),communicationCandidates(:,1))
+            % find if he is in contact with other alliance aircraft
+            % get all the communication candidates of the manager
+            acnummer_alt = find(communicationCandidates(:,1)==biddings(j,1));
+            nCandidates_alt = nnz(communicationCandidates(acnummer_alt,2:end));
+            
+            for x = 1:nCandidates_alt
+                if flightsData(25,communicationCandidates(acnummer_alt,x))==2
+                    acNr1 = biddings(j,1);
+                    acNr2 = communicationCandidates(acnummer_alt,x);
+                    step1b_routingSynchronizationFuelSavings
+                    % If the potential fuel savings with another is bigger
+                    % than with the current manager
+                    if potentialFuelSavings > biddings(j,4)    
+                        % store the potentialFuelSavings
+                        betterOptions = [betterOptions;...
+                            acNr1 acNr2 potentialFuelSavings];
+                    end
+                end
+                
             end
         end
+        acNr1 = acNr1_original;
+    
+    
     end
     % Store biddings in a table for readability
     biddings_table = array2table(biddings,...
@@ -133,70 +162,38 @@ if coordination == 1
 
     %check if there are any biddings
     if nnz(biddings(:,4)) ~= 0
-        betterOptions = [];
         % An alliance manager considers the fuel savings of all other alliance
         % aircraft around him
         if acNr1_type==2
             % Choose the winning option for the manager 
             [offerToManager, rownr_original] = max(biddings(:,4));
-            %alCa are the alliance Candidates
-            alCa = find(biddings(:,2)==2)';
-            % check if these Candidates have a more profitable option than the
-            % manager.
-            if numel(alCa) > 1
-            for f1 = alCa(1:end-1) %the last in line will have no one after him
-                for f2 = alCa(find(alCa>f1))   %so everything is only checked once
-                    flight1 = biddings(f1,1);
-                    flight2 = biddings(f2,1);
-                    % check if these Candidates are within each others range    
-                    if flightsData(flight1,2) == 1 && flightsData(flight2,2) == 1             
-                    acNr1 = flight1;
-                    acNr2 = flight2;
-                    % This file contains code to perform the routing and
-                    % synchronization, and to determine the potential fuel savings.
-                    step1b_routingSynchronizationFuelSavings
-                    % If the involved flights can reduce their cumulative fuel burn
-                    % more than the current options, the formation route is stored.
-                    if potentialFuelSavings > 1.3*offerToManager
-
-                        %store the potentialFuelSavings
-                        betterOptions = [betterOptions;...
-                            flight1 flight2 potentialFuelSavings];
-                    end
-                    end
-                end
-            end
-            end
-            % Put the manager back to the original
-            acNr1 = acNr1_original; 
-
-            % If there are better options than the current one:
-            if isempty(betterOptions) ~= 1
-                % Choose the winning alternative option
+            if isempty(betteroptions) ~= 1
                 [theBestOption, rownr_alternative] = max(betterOptions(:,3));
-                %%% MANAGER CHOOSES NEW MANAGER %%%
-                newmanager = betterOptions(rownr_alternative,1);
-                % save how many times this option is used
-                if exist('useOfCoordinationAdvantage') == 0
-                    useOfCoordinationAdvantage = 0;
-                end
-                useOfCoordinationAdvantage = useOfCoordinationAdvantage + 1;
-            else
-                % An alliance manager considers the bidding of an alliance contractor
-                % twice as important as a bidding of a non-alliance contractor.
-                for j = 1:nCandidates
-                    if biddings(j,2)==2
-                        biddings(j,4) = biddings(j,4)*2;
+                if theBestOption > 1.3*offerToManager
+                    %%% MANAGER CHOOSES NEW MANAGER %%%
+                    newmanager = betterOptions(rownr_alternative,1);
+                    % save how many times this option is used
+                    if exist('useOfCoordinationAdvantage') == 0
+                        useOfCoordinationAdvantage = 0;
                     end
-                end
-                % Choose the winning option for the manager 
-                [offerToManager, rownr_original] = max(biddings(:,4));
-                % If there are no better options, continue with the original
-                % winner.
-                % If the winning contractor is also alliance, set the
-                % fuelSavingsOffer back to the real offer and not the considered one.
-                if biddings(rownr_original,2) == 2
-                    offerToManager = offerToManager/2;
+                    useOfCoordinationAdvantage = useOfCoordinationAdvantage + 1;
+                else
+                    % An alliance manager considers the bidding of an alliance contractor
+                    % twice as important as a bidding of a non-alliance contractor.
+                    for j = 1:nCandidates
+                        if biddings(j,2)==2
+                            biddings(j,4) = biddings(j,4)*2;
+                        end
+                    end
+                    % Choose the winning option for the manager 
+                    [offerToManager, rownr_original] = max(biddings(:,4));
+                    % If there are no better options, continue with the original
+                    % winner.
+                    % If the winning contractor is also alliance, set the
+                    % fuelSavingsOffer back to the real offer and not the considered one.
+                    if biddings(rownr_original,2) == 2
+                        offerToManager = offerToManager/2;
+                    end
                 end
             end
         else
@@ -204,7 +201,7 @@ if coordination == 1
             % Choose the winning option for the manager 
             [offerToManager, rownr_original] = max(biddings(:,4)); 
         end
-
+             
         % If there is no new manager chosen:
         if newmanager == 0
             fuelSavingsOffer = offerToManager;
