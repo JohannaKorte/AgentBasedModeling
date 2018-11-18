@@ -59,7 +59,7 @@
 % Close figures.
 close all
 % Clear workspace.
-clearvars 
+%clearvars 
 % Clear command window.
 clc
 % Add paths.
@@ -103,7 +103,7 @@ end
 %% Carry out the simulation runs.
 for simrun = 1:nSimulations
     %% Prepare the (new) simulation run.
-        
+    disp(simrun);    
     % Remove previously obtained data from the variables.
     clearvars flightsDataRecordings flightsDataReal flightsData
 

@@ -31,6 +31,19 @@
 % (determineRoutingAndSynchronization.m, calculateFuelSavings.m) and
 % step1c_updateProperties.m.
 
+if exists('allianceManager') == 0
+   allianceManager = 0;  
+end
+if exists('auctionWinners') == 0
+    auctionWinners = 0;
+end
+if exist('winningBid') == 0
+    winningBid = 0;
+end 
+if exist('winningAllianceBid') == 0
+    winningAllianceBid = 0;
+end 
+
 % Step size to increase the auction bid by 
 increaseBid = 20; 
 
@@ -39,6 +52,10 @@ increaseBid = 20;
 most_connected_agents_index = find(communicationCandidates(:,end));
 % Pick first index to be auctioneer
 auctioneer = communicationCandidates(most_connected_agents_index(1),1);
+side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+if side_auctioneer == 2
+   allianceManager = allianceManager + 1;  
+end
 acNr1 = auctioneer; 
 bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
 
@@ -52,8 +69,6 @@ if communication == 1  %communication/coordination allowed
     allKnowledge = communicateAllianceAuction(flightsData, bidders, ...
         auctioneer, nAircraft, wMulti, wTrail, Vmin, Vmax, dt, ...
         fuelPenalty, t, flightsDataRecordings, MFuelSolo, MFuelTrail);
-    side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
-
     while length(bidders) > 1
         %loop over bidders to see if anyone wants to exit
         for acNr2 = bidders
@@ -140,9 +155,14 @@ if length(bidders) == 1 && current_bid ~=0
     step1b_routingSynchronizationFuelSavings
     if potentialFuelSavings ~= 0
         fuelSavingsOffer = current_bid;
+        winningBid = winningBid + fuelSavingsOffer; 
         divisionFutureSavings = flightsData(acNr1,19)/ ...
             (flightsData(acNr1,19) + flightsData(acNr2,19));
         % Update properties to accept the formation
+        if determineAlliance(flightsData, nAircraft, acNr2) == 2
+            auctionWinners = auctionWinners + 1; 
+            winningAllianceBid = winningAllianceBid + fuelSavingsOffer;
+        end
         step1c_updateProperties
     end 
 end 

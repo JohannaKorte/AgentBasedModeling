@@ -31,6 +31,19 @@
 % (determineRoutingAndSynchronization.m, calculateFuelSavings.m) and
 % step1c_updateProperties.m.
 
+if exist('allianceManager') == 0
+   allianceManager = 0; 
+end
+if exist('auctionWinners') == 0
+   auctionWinners = 0; 
+end
+if exist('winningBid') == 0
+    winningBid = 0;
+end 
+if exist('winningAllianceBid') == 0
+    winningAllianceBid = 0;
+end 
+
 % Step size to decrease the auction bid by 
 decreaseBid = 20; 
 
@@ -42,6 +55,9 @@ auctioneer = communicationCandidates(most_connected_agents_index(1),1);
 acNr1 = auctioneer; 
 bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
 side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+if side_auctioneer == 2
+    allianceManager = allianceManager + 1; 
+end 
 % Start with a high current_bid, and decrease it until a bidder wants to 
 % take the bid
 accepted_bid = 'false';
@@ -114,6 +130,13 @@ if communication == 1 %communitcation allowed between alliance flights
                             % Update properties to accept the formation 
                             step1c_updateProperties
                             accepted_bid = 'true'; 
+                            winningBid = winningBid + current_bid; 
+                            if determineAlliance(flightsData,...
+                                nAircraft, acNr2) == 2
+                                auctionWinners = auctionWinners + 1; 
+                                winningAllianceBid = winningAllianceBid + ...
+                                    current_bid;
+                            end
                         end 
                     end 
                 end 
@@ -154,6 +177,13 @@ else
                             % Update properties to accept the formation 
                             step1c_updateProperties
                             accepted_bid = 'true'; 
+                            winningBid = winningBid + current_bid; 
+                            if determineAlliance(flightsData,...
+                                nAircraft, acNr2) == 2
+                                auctionWinners = auctionWinners + 1; 
+                                winningAllianceBid = winningAllianceBid + ...
+                                    current_bid; 
+                            end
                         end 
                     end 
                 end 

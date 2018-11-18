@@ -2,9 +2,11 @@
     fuelSavingsNonAlliancePct,extraDistancePct,extraFlightTimePct, ...
     averageFormationSize, averageFormationNumbers, sameTypePct, ...
     allianceInFormationsPct_form, allianceInFormationsPct_all...
-    divisionOfferManagerAverage] = ...
+    divisionOfferManagerAverage, allianceManagerPI, auctionWinnerPI, ...
+    winningBidPI, winningAllianceBidPI] = ...
     calculateResults(nAircraft,flightsDataRecordings,Wfinal,Vmax, ...
-    fuelSavingsTotal,percentageAlliance)
+    fuelSavingsTotal,percentageAlliance, allianceManager, ...
+    auctionWinners, winningBid, winningAllianceBid)
 %% calculateResults.m description
 % This function determines the realized fuel savings, the extra flight time
 % due to formation flying, and the extra distance flown due to formation
@@ -297,7 +299,21 @@ allianceInFormationsPct_form = numel(find(form_alliance==2))/nnz(form_alliance).
 allianceInFormationsPct_all = numel(find(form_alliance==2))/(nAircraft*(percentageAlliance/100))...
     *100; % [%]
 
+ticks = size(flightsDataRecordings,1);
+
 % Average accepted offer from a manager (so how much does the manager get
 % on average).
 divisionOfferManagerAverage = sum(divisions)/nnz(divisions); % [-]
+
+% Manager is alliance
+allianceManagerPI = allianceManager/ticks*100; 
+
+% Percentage of winning bids from alliance bidder 
+auctionWinnerPI = auctionWinners/ticks*100; 
+
+% Average heigt of winning bid
+winningBidPI = winningBid/ticks;
+
+% average height of winning alliance bid
+winningAllianceBidPI = winningAllianceBid/ticks; 
 end

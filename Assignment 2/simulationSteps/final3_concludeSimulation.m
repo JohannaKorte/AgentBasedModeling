@@ -16,9 +16,11 @@
 fuelSavingsNonAlliancePct,extraDistancePct,extraFlightTimePct, ...
 averageFormationSize, averageFormationNumbers, sameTypePct, ...
 allianceInFormationsPct_form, allianceInFormationsPct_all...
-divisionOfferManagerAverage] = ...
+divisionOfferManagerAverage, allianceManagerPI, auctionWinnersPI, ...
+winningBidPI, winningAllianceBidPI] = ...
     calculateResults(nAircraft,flightsDataRecordings,Wfinal,Vmax, ...
-    fuelSavingsTotal,percentageAlliance);
+    fuelSavingsTotal,percentageAlliance, allianceManager, auctionWinners,...
+    winningBid, winningAllianceBid);
 
 % Actual fuel savings, comparing the actual fuel use to the total fuel
 % use if of only solo flights were flown.
@@ -54,33 +56,55 @@ extraFlightTimePctPerRun(simrun) = extraFlightTimePct; % [%]
 % 7
 averageFormationSizePerRun(simrun) = averageFormationSize; % [-]
 
-% ADDED
+% ADDED 1.2 
 % Average amount of formations per tick per run
 %8
 averageFormationNumbersPerRun(simrun) = averageFormationNumbers; % [-]
 
-% ADDED
+% ADDED 1.2
 % Percentage of same type (alliance/non-alliance) aircraft formations per run
 % 9
 sameTypePctPerRun(simrun) = sameTypePct; % [%]
 
-% ADDED
+% ADDED 1.2 
 % Percentage of the alliance aircraft that make up all aircraft in
 % formations Per run
 % 10 
 allianceInFormationsPctPerRun_form(simrun) = allianceInFormationsPct_form; % [%]
 
-% ADDED
+% ADDED 1.2
 % Percentage of alliance aircraft in formations (wrt all alliance aircraft)
 % Per run
 % 11
 allianceInFormationsPctPerRun_all(simrun) = allianceInFormationsPct_all; % [%]
 
-% ADDED
+% ADDED 1.4
 % Average accepted offer from a manager (so how much does the manager get
 % on average) per run.
 % 12
 divisionOfferManagerAveragePerRun(simrun) = divisionOfferManagerAverage; % [-]
+
+if negotiationTechnique > 1
+    % ADDED 2.1
+    % The percentage of auctions with an alliance auctioneer per run
+    % 13 
+    allianceAuctioneersPctPerRun(simrun) = allianceManagerPI; % [%]
+
+    % ADDED 2.1
+    % The percentage of auctions that is won by an alliance bidder per run
+    % 14
+    auctionWinnersAlliancePctPerRun(simrun) = auctionWinnersPI; % [%]
+
+    % ADDED 2.1 
+    % The average winning bid per run
+    % 15
+    averageWinningBidPerRun(simrun) = winningBidPI; % [kg]
+
+    % ADDED 2.1
+    % 16
+    % The average winning alliance bid per run
+    averageWinningAllianceBidPerRun(simrun) = winningAllianceBidPI; % [kg]
+end 
 
 if coordination == 1
 % The amount of times there has been made use of the coordination advantage
@@ -94,7 +118,9 @@ results = [fuelSavingsTotalPerRun'; fuelSavingsTotalPctPerRun'; ...
     extraDistancePctPerRun'; extraFlightTimePctPerRun'; ...
     averageFormationSizePerRun'; averageFormationNumbersPerRun'; ...
     sameTypePctPerRun'; allianceInFormationsPctPerRun_form'; ...
-    allianceInFormationsPctPerRun_all'; divisionOfferManagerAveragePerRun'];
+    allianceInFormationsPctPerRun_all'; divisionOfferManagerAveragePerRun';...
+    allianceAuctioneersPctPerRun'; auctionWinnersAlliancePctPerRun';...
+    averageWinningBidPerRun'; averageWinningAllianceBidPerRun'];
 %% Clear some variables.
 
 clearvars a acNr1 acNr2 c communicationCandidates divisionFutureSavings ...
@@ -109,4 +135,5 @@ clearvars a acNr1 acNr2 c communicationCandidates divisionFutureSavings ...
     fuelSavingsNonAlliancePct fuelSavingsTotal fuelSavingsTotalPct ...
     averageFormationSize averageFormationNumbers sameTypePct ...
     allianceInFormationsPct_form allianceInFormationsPct_all ...
-    divisionOfferManagerAverage
+    divisionOfferManagerAverage allianceManager auctionWinners winningBid ...
+    winningAllianceBid

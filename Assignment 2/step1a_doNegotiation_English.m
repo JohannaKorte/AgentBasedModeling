@@ -31,6 +31,18 @@
 % (determineRoutingAndSynchronization.m, calculateFuelSavings.m) and
 % step1c_updateProperties.m.
 
+if exist('allianceManager') == 0
+   allianceManager = 0; 
+end
+if exist('auctionWinners') == 0
+    auctionWinners = 0;
+end
+if exist('winningBid') == 0
+    winningBid = 0;
+end 
+if exist('winningAllianceBid') == 0
+    winningAllianceBid = 0;
+end 
 
 % Find the agent that can communicate with most others and choose it as a
 % auctioneer
@@ -38,13 +50,16 @@ most_connected_agents_index = find(communicationCandidates(:,end));
 % Pick first index to be auctioneer
 auctioneer = communicationCandidates(most_connected_agents_index(1),1);
 acNr1 = auctioneer; 
+side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+if side_auctioneer == 2
+    allianceManager = allianceManager + 1; 
+end 
 bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
 highest_bidder = 0; 
 current_bid = 0; 
 increase = 1;
 
 if communication == 1 % Communication between alliance flights allowed
-    side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
     last_alliance_bid = 0; 
     while increase ~= 0 && length(bidders) > 1
         increase = 0; 
@@ -144,8 +159,13 @@ if highest_bidder ~= 0
     acNr2 = highest_bidder; 
     step1b_routingSynchronizationFuelSavings
     fuelSavingsOffer = current_bid;
+    winningBid = winningBid + fuelSavingsOffer; 
     divisionFutureSavings = flightsData(acNr1,19)/ ...
         (flightsData(acNr1,19) + flightsData(acNr2,19));
     % Update properties to accept the formation 
+    if determineAlliance(flightsData, nAircraft, acNr2) == 2
+        auctionWinners = auctionWinners + 1; 
+        winningAllianceBid = winningAllianceBid + current_bid; 
+    end
     step1c_updateProperties
 end 

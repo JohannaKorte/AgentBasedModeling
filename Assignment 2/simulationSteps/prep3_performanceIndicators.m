@@ -54,3 +54,15 @@ divisionOfferManagerAveragePerRun = zeros(nSimulations,1); % [-]
 % of the alliance manager.
 useOfCoordinationAdvantagePerRun = zeros(nSimulations,1); % [-]
 
+% The percentage of auctions with an alliance auctioneer per run
+allianceAuctioneersPctPerRun = zeros(nSimulations,1); % [%]
+allianceManager = 0; 
+
+% The percentage of auctions that is won by an alliance bidder per run
+auctionWinnersAlliancePctPerRun = zeros(nSimulations,1); % [%]
+
+% The average winning bid per run
+averageWinningBidPerRun = zeros(nSimulations,1); % [kg]
+
+% The average winning alliance bid per run
+averageWinningAllianceBidPerRun = zeros(nSimulations,1); % [kg]

@@ -31,6 +31,18 @@
 % (determineRoutingAndSynchronization.m, calculateFuelSavings.m) and
 % step1c_updateProperties.m.
 % _________________________________________________________________________
+if exist('allianceManager') == 0
+   allianceManager = 0; 
+end
+if exist('auctionWinners') == 0
+    auctionWinners = 0;
+end
+if exist('winningBid') == 0
+    winningBid = 0;
+end 
+if exist('winningAllianceBid') == 0
+    winningAllianceBid = 0;
+end 
 
 % Find the agent that can communicate with most others and choose it as a
 % auctioneer
@@ -38,6 +50,10 @@ most_connected_agents_index = find(communicationCandidates(:,end));
 % Pick first index to be auctioneer
 auctioneer = communicationCandidates(most_connected_agents_index(1),1);
 acNr1 = auctioneer; 
+side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
+if side_auctioneer == 2
+   allianceManager = allianceManager + 1; 
+end
 bidders = communicationCandidates(most_connected_agents_index(1), 2:end); 
 highest_bid = 0; 
 second_bid = 0;
@@ -47,7 +63,6 @@ margin = 1.05; %increase bid because the 2nd highest bid is paid
 if communication == 1
     % Determine whether the auctioneer is alliance, if so share all its 
     % knowledge of maximum fuel savings with all other alliance flights
-    side_auctioneer = determineAlliance(flightsData, nAircraft, acNr1);
     allKnowledge = communicateAllianceAuction(flightsData, bidders, ...
         auctioneer, nAircraft, wMulti, wTrail, Vmin, Vmax, dt, ...
         fuelPenalty, t, flightsDataRecordings, MFuelSolo, MFuelTrail);
@@ -143,7 +158,12 @@ if highest_bid > 0
     fuelSavingsOffer = second_bid;
     divisionFutureSavings = flightsData(acNr1,19)/ ...
         (flightsData(acNr1,19) + flightsData(acNr2,19));
+    winningBid = winningBid + fuelSavingsOffer; 
     % Update properties to accept the formation 
+    if determineAlliance(flightsData, nAircraft, acNr2) == 2
+        auctionWinners = auctionWinners + 1; 
+        winningAllianceBid = fuelSavingsOffer + winningAllianceBid; 
+    end
     step1c_updateProperties
 end 
 
