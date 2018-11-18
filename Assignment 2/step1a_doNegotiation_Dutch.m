@@ -58,7 +58,7 @@ if communication == 1 %communitcation allowed between alliance flights
             % amount that he seems suitable and is as close as possible
             % to an alliance bid 
             if side_auctioneer == 2 && ~isempty(allKnowledge)
-                difference = max(allKnowledge(:,2)) - current_bid;
+                difference = min(allKnowledge(:,2) > 0) - current_bid;
                 if difference > 0
                     decreaseBid = 0.5*difference; 
                 end 
