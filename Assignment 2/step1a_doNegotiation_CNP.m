@@ -137,9 +137,9 @@ if coordination == 1
             nCandidates_alt = nnz(communicationCandidates(acnummer_alt,2:end));
             
             for x = 1:nCandidates_alt
-                if flightsData(25,communicationCandidates(acnummer_alt,x))==2
+                if flightsData(communicationCandidates(acnummer_alt,x+1),25)==2
                     acNr1 = biddings(j,1);
-                    acNr2 = communicationCandidates(acnummer_alt,x);
+                    acNr2 = communicationCandidates(acnummer_alt,x+1);
                     step1b_routingSynchronizationFuelSavings
                     % If the potential fuel savings with another is bigger
                     % than with the current manager
@@ -167,12 +167,13 @@ if coordination == 1
         if acNr1_type==2
             % Choose the winning option for the manager 
             [offerToManager, rownr_original] = max(biddings(:,4));
-            if isempty(betteroptions) ~= 1
+            if isempty(betterOptions) ~= 1
                 [theBestOption, rownr_alternative] = max(betterOptions(:,3));
-                if theBestOption > 1.3*offerToManager
+                if theBestOption > 1.05*offerToManager
                     %%% MANAGER CHOOSES NEW MANAGER %%%
                     newmanager = betterOptions(rownr_alternative,1);
                     % save how many times this option is used
+                    
                     if exist('useOfCoordinationAdvantage') == 0
                         useOfCoordinationAdvantage = 0;
                     end
@@ -305,7 +306,9 @@ else
         step1c_updateProperties
     end
 end
-
+if exist('useOfCoordinationAdvantage') == 0
+    useOfCoordinationAdvantage = 0;
+end
     
     
 
