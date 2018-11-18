@@ -22,46 +22,64 @@ divisionOfferManagerAverage] = ...
 
 % Actual fuel savings, comparing the actual fuel use to the total fuel
 % use if of only solo flights were flown.
+%1
 fuelSavingsTotalPerRun(simrun) = fuelSavingsTotal; % [kg]
 
 % Percentual fuel savings, comparing the actual fuel use to the total fuel
 % use if of only solo flights were flown.
+%2
 fuelSavingsTotalPctPerRun(simrun) = fuelSavingsTotalPct; % [%]
 
 % Percentage of the total fuel savings that went to the alliance.
+%3
 fuelSavingsAlliancePctPerRun(simrun) = fuelSavingsAlliancePct; % [%]
 
 % Percentage of the total fuel savings that went to the non-alliance
 % flights.
+%4
 fuelSavingsNonAlliancePctPerRun(simrun) = fuelSavingsNonAlliancePct; % [%]
 
 % Percentual change in total distance, comparing the actual total distance
 % to the total distance if only solo flights were flown.
+%5
 extraDistancePctPerRun(simrun) = extraDistancePct; % [%]
 
 % Percentual change in total flight, comparing the actual flight time to
 % the total flight time of only solo flights were flown.
+%6
 extraFlightTimePctPerRun(simrun) = extraFlightTimePct; % [%]
 
+% ADDED
 % Average size of formations per tick per run
+% 7
 averageFormationSizePerRun(simrun) = averageFormationSize; % [-]
 
+% ADDED
 % Average amount of formations per tick per run
+%8
 averageFormationNumbersPerRun(simrun) = averageFormationNumbers; % [-]
 
+% ADDED
 % Percentage of same type (alliance/non-alliance) aircraft formations per run
+% 9
 sameTypePctPerRun(simrun) = sameTypePct; % [%]
 
+% ADDED
 % Percentage of the alliance aircraft that make up all aircraft in
 % formations Per run
+% 10 
 allianceInFormationsPctPerRun_form(simrun) = allianceInFormationsPct_form; % [%]
 
+% ADDED
 % Percentage of alliance aircraft in formations (wrt all alliance aircraft)
 % Per run
+% 11
 allianceInFormationsPctPerRun_all(simrun) = allianceInFormationsPct_all; % [%]
 
+% ADDED
 % Average accepted offer from a manager (so how much does the manager get
 % on average) per run.
+% 12
 divisionOfferManagerAveragePerRun(simrun) = divisionOfferManagerAverage; % [-]
 
 if coordination == 1
@@ -70,6 +88,13 @@ if coordination == 1
 useOfCoordinationAdvantagePerRun(simrun) = useOfCoordinationAdvantage; % [-]
 clearvars useOfCoordinationAdvantage
 end
+
+results = [fuelSavingsTotalPerRun'; fuelSavingsTotalPctPerRun'; ...
+    fuelSavingsAlliancePctPerRun'; fuelSavingsNonAlliancePctPerRun';...
+    extraDistancePctPerRun'; extraFlightTimePctPerRun'; ...
+    averageFormationSizePerRun'; averageFormationNumbersPerRun'; ...
+    sameTypePctPerRun'; allianceInFormationsPctPerRun_form'; ...
+    allianceInFormationsPctPerRun_all'; divisionOfferManagerAveragePerRun'];
 %% Clear some variables.
 
 clearvars a acNr1 acNr2 c communicationCandidates divisionFutureSavings ...
